@@ -6,6 +6,7 @@ import FilterContextComponent from "./context/FilterContext";
 import SortContextComponent from "./context/SortContext";
 import SearchContextComponent from "./context/SearchContext";
 import ColorsContextComponent from "./context/ColorsContext";
+import KeywordsContextComponent from "./context/KeywordsContext";
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import SelectedItemsContextComponent from "./context/SelectedItems";
 
@@ -29,6 +30,8 @@ function App() {
 
     <BrowserRouter>
     <SelectedItemsContextComponent>
+    
+    <KeywordsContextComponent>
       <ColorsContextComponent>
         <SearchContextComponent>
           <SortContextComponent>
@@ -42,6 +45,7 @@ function App() {
           </SortContextComponent>
         </SearchContextComponent>
       </ColorsContextComponent>
+      </KeywordsContextComponent>
       </SelectedItemsContextComponent>
     </BrowserRouter>
   </ThemeProvider>

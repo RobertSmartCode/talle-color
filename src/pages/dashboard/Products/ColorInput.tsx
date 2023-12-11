@@ -6,7 +6,7 @@ import { useColorsContext } from '../../../context/ColorsContext';
 
 interface ColorInputProps {
   initialColors?: { color: string; sizes: string[]; quantities: number[] }[];
-  updateColors: (newColors: { color: string; sizes: string[]; quantities: number[] }[]) => void;
+  
 }
 
 const ColorInput: React.FC<ColorInputProps> = ({ initialColors}) => {

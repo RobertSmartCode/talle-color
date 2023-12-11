@@ -16,13 +16,16 @@ import {
 } from "@mui/material";
 import * as Yup from "yup";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import ColorInputDesktop from "./ColorInputDesktop";
+import KeywordsInput from "./KeywordsInput";
 import { useColorsContext } from '../../../context/ColorsContext'; 
+import { useKeywordsContext } from '../../../context/KeywordsContext'; 
 import { Product, ColorData,  } from '../../../type/type';
 import { getFormattedDate } from '../../../utils/dateUtils';
 import { ErrorMessage } from '../../../messages/ErrorMessage';
 import { productSchema } from '../../../schema/productSchema';
 import { useSelectedItemsContext } from '../../../context/SelectedItems';
-import ColorInputDesktop from "./ColorInputDesktop";
+
 
 const ProductsFormDesktop: React.FC= ({
  
@@ -60,12 +63,14 @@ const ProductsFormDesktop: React.FC= ({
 const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
 const [colorErrors, setColorErrors] = useState<{ [key: string]: string }>({});
+const [keywordsErrors, setKeywordsErrors] = useState<{ [key: string]: string }>({});
 
 const [errorTimeout, setErrorTimeout] = useState<NodeJS.Timeout | null>(null);
 
 const clearErrors = () => {
   setErrors({});
   setColorErrors({}); 
+  setKeywordsErrors({});
 };
 
 // Función para manejar el tiempo de duración de los errores
@@ -100,8 +105,28 @@ const validateColorsData = (colorsData: ColorData[]) => {
   return Object.keys(newErrors).length === 0; // Devuelve true si no hay errores
 };
 
+const validateKeywords = (keywords: string[]) => {
+  const newErrors: { [key: string]: string } = {};
 
-const { colors, updateColors } = useColorsContext()!;
+  if (!keywords || keywords.length === 0) {
+    newErrors.keywords = "Debe haber al menos una palabra clave";
+  }
+
+  for (let i = 0; i < keywords.length; i++) {
+    const keyword = keywords[i];
+
+    if (!keyword.trim()) {
+      newErrors[`keyword${i}`] = "Cada palabra clave debe tener un valor válido";
+    }
+  }
+  setKeywordsErrors(newErrors);
+  return Object.keys(newErrors).length === 0; // Devuelve true si no hay errores
+};
+
+
+const { colors } = useColorsContext()!;
+const { keywords } = useKeywordsContext()!;
+
 
 const calculateStock = (colorsData: ColorData[]) => {
   let totalStock = 0;
@@ -117,8 +142,7 @@ const calculateStock = (colorsData: ColorData[]) => {
 
 
 const [selectedProductColors, setSelectedProductColors] = useState<{ color: string; sizes: string[]; quantities: number[] }[]>([]);
-
-
+const [selectedProductKeywords, setSelectedProductKeywords] = useState<string[]>([]);
 
  // Estado para las imágenes existentes
  const [files, setFiles] = useState<File[]>([]);
@@ -140,11 +164,12 @@ const [selectedProductColors, setSelectedProductColors] = useState<{ color: stri
   useEffect(() => {
     if (productSelected) {
       setSelectedProductColors(productSelected.colors || []);
+      setSelectedProductKeywords(productSelected.keywords  || []);
       setFiles(productSelected.images.map((imageUrl) => new File([], imageUrl)));
     } else {
       setFiles(newProduct.images.map((imageUrl) => new File([], imageUrl)));
     }
-  }, [productSelected, newProduct]);
+  }, [productSelected]);
 
   
 
@@ -332,7 +357,15 @@ const handleRemoveImage = (index: number) => {
       setErrorTimeoutAndClear();
       return;
     }
-       
+    
+    if (!validateKeywords(keywords)) {
+     
+      setSnackbarMessage("Por favor, corrige los errores en el formulario.");
+      setSnackbarOpen(true);
+      setErrorTimeoutAndClear();
+      return;
+    }
+    
        
     
       // Subir las imágenes y obtener las URLs
@@ -344,9 +377,11 @@ const handleRemoveImage = (index: number) => {
         unit_price: +productToValidate.unit_price,
         createdAt: productToValidate.createdAt ?? getFormattedDate(),
         colors: colors.length > 0 ? [...colors] : [], 
+        keywords:  keywords.length > 0 ? [...keywords] : [],  
         stock: calculateStock(colors), 
         images: [...uploadedImages],
       };
+      
       
   
       const productsCollection = collection(db, "products");
@@ -538,7 +573,7 @@ return (
              <Grid item xs={12}>
              <ColorInputDesktop
                initialColors={selectedProductColors}
-               updateColors={updateColors}
+               
              />
              <ErrorMessage errors={colorErrors} />
  
@@ -546,17 +581,6 @@ return (
              {/* Input Color y Talles */}
    
  
-             <Grid item xs={12} sm={6}>
-               <TextField
-                 variant="outlined"
-                 value={productSelected ? productSelected.keywords: newProduct.keywords}
-                 label="Palabras clave (Separadas por comas)"
-                 name="keywords"
-                 onChange={handleChange}
-                 fullWidth
-                 sx={{ width: '75%', margin: 'auto' }}
-               />
-             </Grid>
              <Grid item xs={12} sm={6}>
                <TextField
                  variant="outlined"
@@ -660,6 +684,13 @@ return (
                  value={productSelected ? productSelected.material : newProduct.material}
                  onChange={handleChange}
                />
+             </Grid>
+             
+             <Grid item xs={12} sm={6}>
+             <KeywordsInput
+              initialKeywords={selectedProductKeywords}
+              />
+              <ErrorMessage errors={keywordsErrors} />
              </Grid>
              <Grid item xs={12} sm={12}>
                <TextField

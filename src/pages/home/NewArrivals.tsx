@@ -32,9 +32,6 @@ const NewArrivals: React.FC = () => {
 
   
 
-// Imprime todos los valores de salesCount usando el estado del componente
-console.log("SalesCount de todos los productos:", products.map((product) => `${product.title}: ${product.createdAt}`));
-
 
   const handleBuyClick = (product: Product) => {
     const cartItem: CartItem = {

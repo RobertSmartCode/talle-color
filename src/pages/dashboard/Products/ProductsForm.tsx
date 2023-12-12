@@ -46,7 +46,7 @@ const ProductsForm: React.FC<ProductsFormProps> = ({
     colors: [],
     images: [],
     sku: "",
-    keywords: [],
+    keywords: "",
     salesCount: "",
     featured: false,
     createdAt: getFormattedDate(),
@@ -75,7 +75,7 @@ const setErrorTimeoutAndClear = () => {
     clearTimeout(errorTimeout);
   }
 
-  const timeout = setTimeout(clearErrors, 10000); // 5000 milisegundos (5 segundos)
+  const timeout = setTimeout(clearErrors, 10000); 
   setErrorTimeout(timeout);
 };
 
@@ -245,21 +245,28 @@ const handleRemoveImage = (index: number) => {
 
   
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-  
-    if (productSelected) {
-      setProductSelected({
-        ...productSelected,
-        [name]: value,
-      });
-    } else {
-      setNewProduct({
-        ...newProduct,
-        [name]: value,
-      });
-    }
-  };
+const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { name, value } = e.target;
+
+  // Lógica para otros campos
+  if (productSelected) {
+    setProductSelected({
+      ...productSelected,
+      [name]: value,
+      // Actualizar automáticamente las palabras clave si el campo modificado es el título
+      keywords: name === 'title' ? value.toLowerCase() : productSelected.keywords,
+    });
+  } else {
+    setNewProduct({
+      ...newProduct,
+      [name]: value,
+      // Actualizar automáticamente las palabras clave si el campo modificado es el título
+      keywords: name === 'title' ? value.toLowerCase() : newProduct.keywords,
+    });
+  }
+};
+
+
 
   // Función para subir las imágenes al servidor y obtener las URL
   const uploadImages = async () => {
@@ -311,11 +318,7 @@ const handleRemoveImage = (index: number) => {
   };
 
 
-
-
    // Función para manejar el envío del formulario
-
-
    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
   
@@ -376,7 +379,7 @@ const handleRemoveImage = (index: number) => {
             validationErrors[e.path] = e.message;
           }
         });
-        console.error("Errores de validación:", validationErrors);
+       
         setErrors(validationErrors);
         setErrorTimeoutAndClear();
         
@@ -555,17 +558,7 @@ const handleRemoveImage = (index: number) => {
                   }
                 />
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                variant="outlined"
-                value={productSelected ? productSelected.keywords: newProduct.keywords}
-                label="Palabras clave (Separadas por comas)"
-                name="keywords"
-                onChange={handleChange}
-                fullWidth
-                sx={{ width: '75%', margin: 'auto' }}
-              />
-            </Grid>
+
             <Grid item xs={12} sm={6}>
               <TextField
                 variant="outlined"

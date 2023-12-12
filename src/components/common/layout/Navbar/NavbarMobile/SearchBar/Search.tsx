@@ -22,8 +22,8 @@ const Search: React.FC = () => {
         const productsCollection = collection(db, 'products');
         const searchQuery = query(
           productsCollection,
-          where("title", ">=", searchKeyword),
-          where("title", "<=", searchKeyword + "\uf8ff")
+          where("keywords", ">=", searchKeyword.toLowerCase()),
+        where("keywords", "<=", searchKeyword.toLowerCase() + "\uf8ff")
         );
         const querySnapshot = await getDocs(searchQuery);
 

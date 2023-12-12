@@ -134,7 +134,7 @@ const ItemDetail: React.FC = () => {
   const discountPercentage = product?.discount || 0;
   const finalPrice = originalPrice - (originalPrice * (discountPercentage / 100));
 
-  console.log(finalPrice,product?.unit_price)
+  
 
   return (
     <Box

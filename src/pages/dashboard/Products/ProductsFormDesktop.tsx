@@ -42,7 +42,7 @@ const ProductsFormDesktop: React.FC= ({
     colors: [],
     images: [],
     sku: "",
-    keywords: [],
+    keywords: "",
     salesCount: "",
     featured: false,
     createdAt: getFormattedDate(),
@@ -247,16 +247,33 @@ const handleRemoveImage = (index: number) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
   
-    if (productSelected) {
-      setProductSelected({
-        ...productSelected,
-        [name]: value,
-      });
+    if (name === 'keywords') {
+      const lowercaseValue = value.toLowerCase();
+  
+      if (productSelected) {
+        setProductSelected({
+          ...productSelected,
+          [name]: lowercaseValue,
+        });
+      } else {
+        setNewProduct({
+          ...newProduct,
+          [name]: lowercaseValue,
+        });
+      }
     } else {
-      setNewProduct({
-        ...newProduct,
-        [name]: value,
-      });
+      // Lógica para otros campos
+      if (productSelected) {
+        setProductSelected({
+          ...productSelected,
+          [name]: value,
+        });
+      } else {
+        setNewProduct({
+          ...newProduct,
+          [name]: value,
+        });
+      }
     }
   };
 
@@ -545,18 +562,6 @@ return (
            </Grid>
              {/* Input Color y Talles */}
    
- 
-             <Grid item xs={12} sm={6}>
-               <TextField
-                 variant="outlined"
-                 value={productSelected ? productSelected.keywords: newProduct.keywords}
-                 label="Palabras clave (Separadas por comas)"
-                 name="keywords"
-                 onChange={handleChange}
-                 fullWidth
-                 sx={{ width: '75%', margin: 'auto' }}
-               />
-             </Grid>
              <Grid item xs={12} sm={6}>
                <TextField
                  variant="outlined"

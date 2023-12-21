@@ -23,7 +23,7 @@ import IconButton from '@mui/material/IconButton';
 import PaymentMethodsInfo from "./PaymentMethodsInfo"; 
 import ShippingMethodsInfo from "./ShippingMethodsInfo"; 
 import ProductDetailsInfo from "./ProductDetailsInfo"; 
-import {CartItem } from "../../../type/type"
+import {CartItem, Product } from "../../../type/type"
 
 const customColors = {
   primary: {
@@ -41,10 +41,15 @@ const ItemDetail: React.FC = () => {
   const { getQuantityById, addToCart, getTotalQuantity } = useContext(CartContext)!;
   const [product, setProduct] = useState<any>(null);
   const [counter, setCounter] = useState<number>(1);
+
+
   const [selectedColor, setSelectedColor] = useState<string>("");
+  
   const [selectedSize, setSelectedSize] = useState<string>("");
 
-  const [availableSizes, setAvailableSizes] = useState<string[]>();
+ const [availableSizes, setAvailableSizes] = useState<string[]>();
+
+ const [availableColors, setAvailableColors] = useState<string[]>();
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -66,23 +71,39 @@ const ItemDetail: React.FC = () => {
 
     fetchProduct();
   }, [id]);
+
+
+
   
-  useEffect(() => {
-    if (product) {
-      const initialAvailableSizes: string[] = product.colors
-        ? product.colors
-            .find((colorObject: { color: string }) => colorObject.color === colorsArray[0])
-            ?.sizes || []
-        : [];
+  
+useEffect(() => {
+  if (product) {
+    const initialAvailableSizes: string[] = product.colors
+      ? product.colors
+          .find((colorObject: { color: string }) => colorObject.color === colorsArray[0])
+          ?.sizes || []
+      : [];
 
-      setAvailableSizes(initialAvailableSizes);
+    const initialAvailableColors: string[] = product.colors
+      ? product.colors.map((colorObject: { color: string }) => colorObject.color) || []
+      : [];
 
-      // Si hay tallas disponibles, seleccionar la primera por defecto
-      if (initialAvailableSizes.length > 0) {
-        setSelectedSize(initialAvailableSizes[0]);
-      }
+    setAvailableSizes(initialAvailableSizes);
+    setAvailableColors(initialAvailableColors);
+
+    // Si hay tallas disponibles, seleccionar la primera por defecto
+    if (initialAvailableSizes.length > 0) {
+      setSelectedSize(initialAvailableSizes[0]);
     }
-  }, [product]);
+
+    // Si hay colores disponibles, seleccionar el primero por defecto
+    if (initialAvailableColors.length > 0) {
+      setSelectedColor(initialAvailableColors[0]);
+    }
+  }
+}, [product]);
+
+
 
   const handleCounterChange = (value: number) => {
     if (value >= 1 && value <= product?.stock) {
@@ -97,7 +118,7 @@ const ItemDetail: React.FC = () => {
     // Filtrar las tallas disponibles para el color seleccionado
     const selectedColorObject = product?.colors.find((c: any) => c.color === color);
     const availableSizes = selectedColorObject?.sizes || [];
-    
+  
     // Actualizar las tallas disponibles
     setAvailableSizes(availableSizes);
   
@@ -105,37 +126,40 @@ const ItemDetail: React.FC = () => {
     if (availableSizes.length > 0) {
       setSelectedSize(availableSizes[0]);
     }
-  
   };
   
   const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedSize(event.target.value);
+    const size = event.target.value;
+    setSelectedSize(size);
   };
-  
 
   const handleAddToCart = () => {
+  
     const cartItem: CartItem = {
       ...product,
       quantity: counter,
-      colors: [{ color: selectedColor, sizes: [selectedSize], quantities: [1] }],
+      selectedColor: selectedColor,
+      selectedSize: selectedSize,
     };
-
+  
     addToCart(cartItem);
-
-    console.log("Producto agregado al carrito:", cartItem);
+  
   };
+  
+  
+  
 
   const colorsArray: string[] = product?.colors
     ? product.colors.map((colorObject: { color: string }) => colorObject.color)
     : [];
  
 
-  const originalPrice = product?.unit_price || 0;
-  const discountPercentage = product?.discount || 0;
-  const finalPrice = originalPrice - (originalPrice * (discountPercentage / 100));
-
-  
-
+    const calculateFinalPrice = (product: Product): number => {
+      const originalPrice = product?.unit_price || 0;
+      const discountPercentage = product?.discount || 0;
+      return originalPrice - (originalPrice * (discountPercentage / 100));
+    };
+    
   return (
     <Box
       sx={{
@@ -252,7 +276,7 @@ const ItemDetail: React.FC = () => {
                     fontSize: "24px"
                   }}
                 >
-                   ${!isNaN(finalPrice) ? finalPrice : 0}
+                 ${calculateFinalPrice(product)}
                 </Typography>
               </Typography>
   
@@ -264,7 +288,7 @@ const ItemDetail: React.FC = () => {
 
               {product && (
                 <Box sx={{ textAlign: "center", marginTop: 2 }}>
-                  {Array.isArray(colorsArray) && colorsArray.length > 0 && (
+                  {Array.isArray(availableColors) && availableColors.length > 0 && (
                     <div style={{ marginBottom: '16px' }}>
                       <label htmlFor="colorSelect" style={{ fontSize: '18px', fontWeight: 'bold', color: customColors.primary.main, display: 'flex', alignItems: 'start' }}>
                         Colores:
@@ -284,7 +308,7 @@ const ItemDetail: React.FC = () => {
                           outline: 'none',
                         }}
                       >
-                        {colorsArray.map((color, index) => (
+                        {availableColors.map((color, index) => (
                           <option
                             style={{ padding: '8px' }}
                             key={index}
@@ -296,7 +320,7 @@ const ItemDetail: React.FC = () => {
                       </select>
                     </div>
                   )}
-  
+
                   {/* Mostrar tallas disponibles para el color seleccionado */}
                   {Array.isArray(availableSizes) && availableSizes.length > 0 && (
                     <div>
@@ -331,14 +355,11 @@ const ItemDetail: React.FC = () => {
                     </div>
                   )}
                 </Box>
-              )}
+)}
             </CardContent>
           </Grid>
         </Grid>
   
-
-
-
 
         <Grid item xs={12} sm={6}>
           <CardContent>

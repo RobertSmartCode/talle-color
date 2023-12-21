@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import { db } from "../../firebase/firebaseConfig";
 import { collection, query, getDocs } from "firebase/firestore";
 import { Link } from "react-router-dom";
@@ -7,21 +7,45 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import FilterProduct from "./FilterProducts"; 
 import { useFilterContext } from "../../context/FilterContext";
 import { useSortContext } from "../../context/SortContext";
-import { CartContext } from "../../context/CartContext";
+
 import AppliedFilters from "./AppliedFilters"; 
-import { Product, CartItem } from '../../type/type';
+import { Product } from '../../type/type';
 import { useTheme, useMediaQuery } from '@mui/material';
 import Filter from "./Filter";
+import SelectionCard from "../../components/pageComponents/SelectionCard/SelectionCard";
 
 const Shop: React.FC = () => {
  
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-  const { addToCart } = useContext(CartContext)!;
   const { filter } = useFilterContext()!;
   const { sort } = useSortContext()!;
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  
+
+  const [isComponentReady, setIsComponentReady] = useState(false);
+  const [loadedImageCount, setLoadedImageCount] = useState(0);
+
+
+  const handleImageLoad = () => {
+    // Incrementa el contador de imágenes cargadas
+    setLoadedImageCount((prevCount) => {
+      const newCount = prevCount + 1;
+      return newCount;
+    });
+  };
+  
+
+  useEffect(() => {
+
+ 
+    if (loadedImageCount >= allProducts.length) {
+      // Actualiza el estado para permitir el renderizado
+      setIsComponentReady(true);
+    }
+  }, [loadedImageCount, allProducts]);
   
 
   useEffect(() => {
@@ -192,16 +216,12 @@ const Shop: React.FC = () => {
   };
 
   const handleBuyClick = (product: Product) => {
-    const cartItem: CartItem = {
-      ...product,
-      quantity: 1,
-    };
-  
-    addToCart(cartItem);
+    setSelectedProduct(product);
   };
   
   return (
     <div>
+       {isComponentReady && (
       <Grid container spacing={2} sx={containerStyles}>
         {/* Fila con Filter */}
         <Grid item xs={12} md={isMobile ? 3 : 2} lg={isMobile ? 3 : 2}>
@@ -224,7 +244,22 @@ const Shop: React.FC = () => {
           {products.map((product) => (
             <Grid item xs={6} sm={4} md={3} lg={3} key={product.id}>
               <Card sx={productStyles}>
-                <img src={product.images[0]} alt={product.title} style={productImageStyles} />
+                <img
+                src={product.images[0]}
+                alt={product.title}
+                style={productImageStyles}
+                onLoad={handleImageLoad} 
+                />
+               {selectedProduct === product ?  (
+                  <SelectionCard
+                    isOpen={true}
+                    onClose={() => setSelectedProduct(null)}
+                    handleBuyClick={handleBuyClick}
+                    product={product}
+                   
+                  />
+                ) : null}
+
                 <CardContent>
                   <Typography variant="subtitle1" gutterBottom sx={productTitleStyles}>
                     {product.title}
@@ -259,6 +294,7 @@ const Shop: React.FC = () => {
           ))}
         </Grid>
       </Grid>
+       )}
     </div>
   );
   

@@ -21,17 +21,22 @@ export interface Product {
   season: string; 
   material: string; 
   details: string; 
+  selectedColor: string; 
+  selectedSize: string;  
 }
 
 export interface CartItem extends Product {
   quantity: number;
-  // Asegúrate de que la propiedad 'colors' sea la misma que en la interfaz 'Product'
+  selectedColor: string; 
+  selectedSize: string;  
+  
   colors: {
     color: string;
     sizes: string[];
     quantities: number[];
-  }[]; // Mismo tipo que en la interfaz 'Product'
+  }[]; 
 }
+
 
 
   export interface ColorData {

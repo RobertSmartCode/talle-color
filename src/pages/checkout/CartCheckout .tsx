@@ -13,12 +13,13 @@ import {
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { CartContext } from '../../context/CartContext';
+import { Product } from '../../type/type';
 
 
 const CartCheckout = () => {
 
   const { cart, getSelectedShippingMethod, getTotalPrice, discountInfo } = useContext(CartContext)! || {};
-  const [productCounters, setProductCounters] = useState<{ [key: string]: number }>({});
+  const [productQuantities, setProductQuantities] = useState<{ [combinedKey: string]: number }>({});
 
 
   const [expanded, setExpanded] = useState(false);
@@ -53,13 +54,20 @@ const CartCheckout = () => {
 
   useEffect(() => {
     // Inicializa los contadores para cada producto en el carrito
-    const initialCounters: { [key: string]: number } = {};
+    const initialQuantities: { [combinedKey: string]: number } = {};
     cart.forEach((product) => {
-      initialCounters[product.id] = product.quantity;
+      const combinedKey = `${product.id}-${product.selectedColor}-${product.selectedSize}`;
+      initialQuantities[combinedKey] = product.quantity;
     });
-    setProductCounters(initialCounters);
+    setProductQuantities(initialQuantities);
   }, [cart]);
 
+  const calculateFinalPrice = (product:Product) => {
+    const originalPrice = product.unit_price || 0;
+    const discountPercentage = product.discount || 0;
+    return originalPrice - (originalPrice * (discountPercentage / 100));
+  };
+  
 
 
 
@@ -98,7 +106,7 @@ const CartCheckout = () => {
           {cart?.length ?? 0 > 0 ? (
             <>
               {cart?.map((product) => (
-                <Grid item xs={12} key={product.id}>
+                 <Grid item xs={12} key={`${product.id}-${product.selectedColor}-${product.selectedSize}`}>
                   <Card>
                     <CardContent style={{ display: 'flex', alignItems: 'center' }}>
                       <Grid container spacing={2}>
@@ -117,8 +125,9 @@ const CartCheckout = () => {
                           <Typography
                             variant="body2"
                             style={{ textAlign: 'center', marginBottom: '30px' }}
+                            
                           >
-                            {product.title} x {productCounters[product.id]}
+                            {` ${product.title} (${product.selectedColor}, ${product.selectedSize})`} x {productQuantities[`${product.id}-${product.selectedColor}-${product.selectedSize}`]}
                           </Typography>
                           <Stack
                             direction="row"
@@ -130,7 +139,7 @@ const CartCheckout = () => {
                         </Grid>
                         <Grid item xs={4} style={{ textAlign: 'right', }}>
                           <Typography variant="body1" style={{ marginBottom: '30px', paddingRight: '15px' }}>
-                            ${product.unit_price * productCounters[product.id]}
+                          ${calculateFinalPrice(product)  * productQuantities[`${product.id}-${product.selectedColor}-${product.selectedSize}`]}
                           </Typography>
 
 
@@ -194,10 +203,6 @@ const CartCheckout = () => {
               </Grid>
             )}
 
-
-
-
-              
               <Grid
                 item
                 xs={12}

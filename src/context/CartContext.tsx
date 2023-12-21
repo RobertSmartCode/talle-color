@@ -7,11 +7,11 @@ interface CartContextData {
   addToCart: (product: CartItem) => void;
   getQuantityById: (id: string) => number | undefined;
   clearCart: () => void;
-  deleteById: (id: string) => void;
+  deleteById: (id: string, color: string, size: string) => void;
   getTotalPrice: () => number;
   getTotalQuantity: () => number;
-  productQuantities: { [key: string]: number };
-  updateQuantityById: (id: string, newQuantity: number) => void;
+  productQuantities:  { [combinedKey: string]: number };
+  updateQuantityById: (id: string, newQuantity: number, color: string, size: string) => void;
   selectedShippingMethod: ShippingMethod | null;
   shippingCost: number;
   updateShippingInfo: (method: ShippingMethod, cost: number) => void;
@@ -82,7 +82,8 @@ interface CartContextComponentProps {
 const CartContextComponent: React.FC<CartContextComponentProps> = ({ children }) => {
   
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [productQuantities, setProductQuantities] = useState<{ [key: string]: number }>({});
+  const [productQuantities, setProductQuantities] = useState<{ [combinedKey: string]: number }>({});
+
   const [selectedShippingMethod, setSelectedShippingMethod] = useState<ShippingMethod | null>(null);
   const [shippingCost, setShippingCost] = useState<number>(0);
   const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
@@ -146,26 +147,44 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
     localStorage.setItem("productQuantities", JSON.stringify(productQuantities));
   }, [cart, productQuantities]);
 
-  const addToCart = (product: CartItem) => {
-    const existingProduct = cart.find((item) => item.id === product.id);
 
-    if (existingProduct) {
-      // Si el producto ya está en el carrito, actualizamos su cantidad
-      const updatedCart = cart.map((item) =>
-        item.id === product.id ? { ...item, quantity: item.quantity + product.quantity } : item
-      );
+  const addToCart = (product: CartItem) => {
+    const combinedKey = `${product.id}-${product.selectedColor}-${product.selectedSize}`;
+  
+    const existingProductIndex = cart.findIndex(
+      (item) =>
+        item.id === product.id &&
+        item.selectedColor === product.selectedColor &&
+        item.selectedSize === product.selectedSize
+    );
+  
+    if (existingProductIndex !== -1) {
+      // Si el producto ya está en el carrito con el mismo id, color y talla, actualizamos su cantidad
+      const updatedCart = [...cart];
+      updatedCart[existingProductIndex] = {
+        ...updatedCart[existingProductIndex],
+        quantity: updatedCart[existingProductIndex].quantity + product.quantity,
+      };
       setCart(updatedCart);
     } else {
       // Si es un producto nuevo en el carrito, lo agregamos
       setCart([...cart, product]);
     }
-
+  
     // Actualizamos la cantidad del producto en el estado de cantidades
-    setProductQuantities({
-      ...productQuantities,
-      [product.id]: (productQuantities[product.id] || 0) + product.quantity,
+    setProductQuantities((prevQuantities) => {
+      return {
+        ...prevQuantities,
+        [combinedKey]: (prevQuantities[combinedKey] || 0) + product.quantity,
+      };
     });
+   
   };
+  
+    
+    
+
+
 
   const getTotalQuantity = () => {
     // Sumar la cantidad de cada producto en el carrito
@@ -187,30 +206,56 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
 
 
 
-  const updateQuantityById = (id: string, newQuantity: number) => {
+  const updateQuantityById = (id: string, newQuantity: number, color: string, size: string) => {
+    const combinedKey = `${id}-${color}-${size}`;
+  
     const updatedCart = cart.map((item) =>
-      item.id === id ? { ...item, quantity: newQuantity } : item
+      item.id === id && item.selectedColor === color && item.selectedSize === size
+        ? { ...item, quantity: newQuantity }
+        : item
     );
-
+  
     setCart(updatedCart);
-
-    setProductQuantities({
-      ...productQuantities,
-      [id]: newQuantity,
+  
+    setProductQuantities((prevQuantities) => {
+      const updatedQuantities = { ...prevQuantities };
+  
+      // Verificamos si ya existe la entrada para la clave combinada
+      if (!updatedQuantities[combinedKey]) {
+        updatedQuantities[combinedKey] = 0;
+      }
+  
+      // Actualizamos la cantidad para la clave combinada
+      updatedQuantities[combinedKey] = newQuantity;
+  
+      return updatedQuantities;
     });
   };
+  
 
-  const deleteById = (id: string) => {
-    // Filtra el carrito para eliminar el elemento con el ID dado
-    const updatedCart = cart.filter((item) => item.id !== id);
+  const deleteById = (id: string, color: string, size: string) => {
+    // Filtra el carrito para eliminar el elemento con el ID, color y talla dados
+    const updatedCart = cart.filter(
+      (item) =>
+        item.id !== id ||
+        item.selectedColor !== color ||
+        item.selectedSize !== size
+    );
   
     // Actualiza el estado del carrito
     setCart(updatedCart);
   
     // Actualiza el estado de las cantidades de productos
     setProductQuantities((prevQuantities) => {
+      const combinedKey = `${id}-${color}-${size}`;
       const updatedQuantities = { ...prevQuantities };
-      delete updatedQuantities[id];
+  
+      // Verifica si existe la entrada para el combinedKey
+      if (updatedQuantities[combinedKey]) {
+        // Elimina la entrada para el combinedKey
+        delete updatedQuantities[combinedKey];
+      }
+  
       return updatedQuantities;
     });
   
@@ -218,12 +263,20 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
     localStorage.setItem("cart", JSON.stringify(updatedCart));
     localStorage.setItem("productQuantities", JSON.stringify(productQuantities));
   };
+  
 
   const getTotalPrice = () => {
-    const total = cart.reduce((acc, elemento) => acc + elemento.unit_price * elemento.quantity, 0);
+    const total = cart.reduce((acc, product) => {
+      const originalPrice = product?.unit_price || 0;
+      const discountPercentage = product?.discount || 0;
+      const discountedPrice = originalPrice - (originalPrice * (discountPercentage / 100));
+  
+      return acc + discountedPrice * product.quantity;
+    }, 0);
+  
     return total;
   };
-
+  
 
   const [discountInfo, setDiscountInfo] = useState<DiscountInfo>({
     createdAt: null,

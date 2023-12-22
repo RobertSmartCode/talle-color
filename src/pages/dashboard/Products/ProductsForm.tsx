@@ -56,6 +56,8 @@ const ProductsForm: React.FC<ProductsFormProps> = ({
     season: "",
     material: "",
     details: "",
+    selectedColor:"", 
+    selectedSize: "", 
   });
 
 const [errors, setErrors] = useState<{ [key: string]: string }>({});

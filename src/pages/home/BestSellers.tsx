@@ -1,18 +1,40 @@
 // BestSellers.tsx
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState} from "react";
 import { db } from "../../firebase/firebaseConfig";
 import { getDocs, collection } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import { Grid, Card, CardContent, Typography, Button, IconButton, Box } from "@mui/material";
 import VisibilityIcon from '@mui/icons-material/Visibility';
-import { CartContext } from "../../context/CartContext";
-import {Product, CartItem} from "../../type/type"
+import {Product} from "../../type/type"
+import SelectionCard from "../../components/pageComponents/SelectionCard/SelectionCard";
+
+
+
 
 
 
 const BestSellers: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const { addToCart } = useContext(CartContext)!; 
+
+const [products, setProducts] = useState<Product[]>([]);
+const [isComponentReady, setIsComponentReady] = useState(false);
+const [loadedImageCount, setLoadedImageCount] = useState(0);
+const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+const handleImageLoad = () => {
+  // Incrementa el contador de imágenes cargadas
+  setLoadedImageCount((prevCount) => {
+    const newCount = prevCount + 1;
+    return newCount;
+  });
+};
+useEffect(() => {
+
+
+  if (loadedImageCount >= products.length) {
+    // Actualiza el estado para permitir el renderizado
+    setIsComponentReady(true);
+  }
+}, [loadedImageCount, products]);
 
   useEffect(() => {
     let refCollection = collection(db, "products");
@@ -29,14 +51,6 @@ const BestSellers: React.FC = () => {
       })
       .catch((err) => console.log(err));
   }, []);
-
-  
-
-// // Imprime todos los valores de salesCount usando el estado del componente
-// console.log("SalesCount de todos los productos:", products.map((product) => `${product.title}: ${product.salesCount}`));
-
-
-  
   
 
   // Colores personalizados
@@ -113,23 +127,16 @@ const BestSellers: React.FC = () => {
     marginBottom: '0px',
   };
 
-
-  
-
   const handleBuyClick = (product: Product) => {
-    // Crear un objeto CartItem basado en el producto con una cantidad inicial de 1
-    const cartItem: CartItem = {
-      ...product,
-      quantity: 1,
-    };
-  
-    // Llama a la función addToCart del contexto para agregar el producto al carrito
-    addToCart(cartItem);
-   
+    setSelectedProduct(product);
   };
   
 
   return (
+
+    <div>
+       {isComponentReady && (
+   
     <Grid container spacing={2} sx={containerStyles}>
       {/* Título responsivo */}
       <Grid item xs={12} sx={{ textAlign: "center" }}>
@@ -140,7 +147,21 @@ const BestSellers: React.FC = () => {
       {products.map((product) => (
         <Grid item xs={6} sm={4} md={4} lg={3} key={product.id}>
           <Card sx={productStyles}>
-            <img src={product.images[0]} alt={product.title} style={productImageStyles} />
+            <img 
+            src={product.images[0]}
+            alt={product.title}
+            style={productImageStyles}
+            onLoad={handleImageLoad} 
+            />
+             {selectedProduct === product ?  (
+                  <SelectionCard
+                    isOpen={true}
+                    onClose={() => setSelectedProduct(null)}
+                    handleBuyClick={handleBuyClick}
+                    product={product}
+                   
+                  />
+                ) : null}
             <CardContent>
               <Typography variant="subtitle1" gutterBottom sx={productTitleStyles}>
                 {product.title}
@@ -174,6 +195,8 @@ const BestSellers: React.FC = () => {
         </Grid>
       ))}
     </Grid>
+      )}
+    </div>
   );
   
 

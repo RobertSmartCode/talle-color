@@ -36,8 +36,6 @@ const Shop: React.FC = () => {
       return newCount;
     });
   };
-  
-
   useEffect(() => {
 
  

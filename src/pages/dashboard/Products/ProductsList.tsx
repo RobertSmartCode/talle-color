@@ -55,6 +55,8 @@ const ProductsList = () => {
           season: productData.season || "",
           material: productData.material || "", 
           details: productData.details || "", 
+          selectedColor: productData.selectedColor  || "", 
+          selectedSize: productData.selectedSize || "", 
         };
       });
       setProducts(newArr);

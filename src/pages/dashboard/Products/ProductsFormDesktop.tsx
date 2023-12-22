@@ -52,6 +52,8 @@ const ProductsFormDesktop: React.FC= ({
     season: "",
     material: "",
     details: "",
+    selectedColor:"", 
+    selectedSize: "", 
   });
 
   const [productSelected, setProductSelected] = useState<Product | null>(null);

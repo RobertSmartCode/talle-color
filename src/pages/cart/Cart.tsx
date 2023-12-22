@@ -16,7 +16,7 @@ const Cart: React.FC = () => {
           <div key={product.id} style={{ width: "200px", border: "2px solid red" }}>
             <h6>{product.title}</h6>
             <h6>{product.quantity}</h6>
-            <button onClick={() => deleteById && deleteById(product.id)}>Eliminar</button>
+            <button onClick={() => deleteById && deleteById(product.id, product.selectedColor,product.selectedSize)}>Eliminar</button>
 
           </div>
         );

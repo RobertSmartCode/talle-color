@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
-import {CartItem } from "../type/type"
+import {Product, CartItem } from "../type/type"
 
 
 interface CartContextData {
@@ -30,6 +30,7 @@ interface CartContextData {
   setCustomerInformation: (info: CustomerInfo) => void;
   updateCustomerInformation: (info: Partial<CustomerInfo>) => void; 
   getCustomerInformation: () => CustomerInfo | null; 
+  checkStock: (product: Product, color: string, size: string) => boolean; 
 }
 
 
@@ -296,6 +297,28 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
   };
   
 
+  const checkStock = (product: Product, color: string, size: string): boolean => {
+
+    const combinedKey = `${product.id}-${color}-${size}`;
+
+    
+    // Obtener la cantidad disponible en el inventario
+      // Obtener la cantidad disponible en el inventario
+      const inventoryQuantity = product?.colors
+      .find((colorObject: { color: string }) => colorObject.color === color)
+      ?.quantities.find((_, index: number) => product?.colors[index]?.sizes.includes(size)) || 0;
+
+          
+    // Obtener la cantidad en el carrito
+    const cartQuantity = productQuantities[combinedKey] || 0;
+
+    // Verificar si hay suficiente stock
+    const hasEnoughStock = inventoryQuantity > cartQuantity;
+
+    return hasEnoughStock;
+  };
+
+
   const data: CartContextData = {
     cart,
     addToCart,
@@ -315,7 +338,8 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
     updateDiscountInfo,
     setCustomerInformation,
     getCustomerInformation,
-    updateCustomerInformation
+    updateCustomerInformation,
+    checkStock
   };
 
   return <CartContext.Provider value={data}>{children}</CartContext.Provider>;

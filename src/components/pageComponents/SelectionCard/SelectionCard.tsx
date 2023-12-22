@@ -32,7 +32,8 @@ const SelectionCard: React.FC<SelectionCardProps> = ({
   product,
 }) => {
 
-  const { addToCart } = useContext(CartContext)!;
+  const { addToCart, checkStock } = useContext(CartContext)!;
+
   const [selectedColor, setSelectedColor] = useState<string>("");
   
   const [selectedSize, setSelectedSize] = useState<string>("");
@@ -40,6 +41,8 @@ const SelectionCard: React.FC<SelectionCardProps> = ({
  const [availableSizes, setAvailableSizes] = useState<string[]>();
 
  const [availableColors, setAvailableColors] = useState<string[]>();
+
+
 
  useEffect(() => {
   if (product) {
@@ -93,18 +96,23 @@ const handleSizeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
 };
 
 const handleAddToCart = () => {
+  // Verifica si hay suficiente stock antes de agregar al carrito
+  const hasEnoughStock = checkStock(product, selectedColor, selectedSize);
 
-  const cartItem: CartItem = {
-    ...product,
-    quantity: 1,
-    selectedColor: selectedColor,
-    selectedSize: selectedSize,
-  };
+  if (hasEnoughStock) {
+    const cartItem: CartItem = {
+      ...product,
+      quantity: 1,
+      selectedColor: selectedColor,
+      selectedSize: selectedSize,
+    };
 
-  addToCart(cartItem);
-
+    addToCart(cartItem);
+  } else {
+    // Muestra un mensaje o realiza alguna acción cuando no hay suficiente stock
+    console.log("No hay suficiente stock para este producto.");
+  }
 };
-
 
 const colorsArray: string[] = product?.colors
   ? product.colors.map((colorObject: { color: string }) => colorObject.color)

@@ -19,6 +19,7 @@ import { Product } from '../../../../../../type/type';
 const CartItemList = () => {
   const { cart, deleteById, updateQuantityById } = useContext(CartContext)! || {};
   const [productQuantities, setProductQuantities] = useState<{ [combinedKey: string]: number }>({});
+  const [exceededMaxInCart, setExceededMaxInCart] = useState(false);
 
   // Función para calcular el subtotal sin envío
   const calculateSubtotal = () => {
@@ -39,7 +40,6 @@ const CartItemList = () => {
   };
   
 
-
   useEffect(() => {
     // Inicializa los contadores para cada producto en el carrito
     const initialQuantities: { [combinedKey: string]: number } = {};
@@ -50,15 +50,31 @@ const CartItemList = () => {
     setProductQuantities(initialQuantities);
   }, [cart]);
 
-  const handleCounterChange = (productId: string, value: number, color: string, size: string) => {
-    if (value >= 1) {
-      const combinedKey = `${productId}-${color}-${size}`;
+
+
+  const handleCounterChange = (product: Product, value: number, color: string, size: string) => {
+    const combinedKey = `${product.id}-${color}-${size}`;
+  
+    // Obtener la cantidad disponible en el inventario
+    const inventoryQuantity = product?.colors
+      .find((colorObject: { color: string }) => colorObject.color === color)
+      ?.quantities.find((_, index: number) => product?.colors[index]?.sizes.includes(size)) || 0;
+  
+    // Verificar si el cambio propuesto está dentro del límite de stock disponible
+    if (value >= 1 && value <= inventoryQuantity) {
+      // Actualizar la cantidad en el carrito solo si el cambio es válido
       setProductQuantities((prevQuantities) => ({
         ...prevQuantities,
         [combinedKey]: value,
       }));
-
-      updateQuantityById(productId, value, color, size);
+  
+      updateQuantityById(product.id, value, color, size);
+    }
+    if ( value >= inventoryQuantity) {
+      setExceededMaxInCart(true);
+      setTimeout(() => {
+        setExceededMaxInCart(false);
+      }, 1000); 
     }
   };
   
@@ -113,7 +129,7 @@ return (
                             onClick={() => {
                               const combinedKey = `${product.id}-${product.selectedColor}-${product.selectedSize}`;
                               const newValue = productQuantities[combinedKey] - 1;
-                              handleCounterChange(product.id, newValue, product.selectedColor, product.selectedSize );
+                              handleCounterChange(product, newValue, product.selectedColor, product.selectedSize );
                             }}
                           >
                             <RemoveIcon />
@@ -126,7 +142,7 @@ return (
                             onClick={() => {
                               const combinedKey = `${product.id}-${product.selectedColor}-${product.selectedSize}`;
                               const newValue = productQuantities[combinedKey] + 1;
-                              handleCounterChange(product.id, newValue, product.selectedColor, product.selectedSize );
+                              handleCounterChange(product, newValue, product.selectedColor, product.selectedSize );
                             }}
                           >
                             <AddIcon />
@@ -149,6 +165,11 @@ return (
                       </Grid>
                     </Grid>
                   </CardContent>
+                  {exceededMaxInCart && (
+                    <CardContent style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
+                      <Typography variant="body1">Tienes el máximo disponible.</Typography>
+                    </CardContent>
+                  )}
                 </Card>
               </Grid>
             ))}

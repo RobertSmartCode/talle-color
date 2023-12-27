@@ -38,7 +38,7 @@ const customColors = {
 
 const ItemDetail: React.FC = () => {
   const { id } = useParams<{ id: string | undefined }>();
-  const { getQuantityById, addToCart, getTotalQuantity } = useContext(CartContext)!;
+  const {  addToCart, checkStock, getStockForProduct } = useContext(CartContext)!;
   const [product, setProduct] = useState<any>(null);
   const [counter, setCounter] = useState<number>(1);
 
@@ -50,6 +50,11 @@ const ItemDetail: React.FC = () => {
  const [availableSizes, setAvailableSizes] = useState<string[]>();
 
  const [availableColors, setAvailableColors] = useState<string[]>();
+
+ const [showError, setShowError] = useState(false);
+
+ const [exceededMaxInCart, setExceededMaxInCart] = useState(false);
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -74,8 +79,6 @@ const ItemDetail: React.FC = () => {
 
 
 
-  
-  
 useEffect(() => {
   if (product) {
     const initialAvailableSizes: string[] = product.colors
@@ -105,11 +108,27 @@ useEffect(() => {
 
 
 
-  const handleCounterChange = (value: number) => {
-    if (value >= 1 && value <= product?.stock) {
-      setCounter(value);
-    }
-  };
+
+
+
+const handleCounterChange = (value: any, product: Product, color: string, size: string) => {
+  const maxInCart = getStockForProduct(product, color, size);
+
+  // Actualizar el contador solo si hay suficiente stock y no se ha excedido el máximo en el carrito
+  if (value >= 1 && value <= maxInCart) {
+    setCounter(value);
+    setExceededMaxInCart(false);  
+  } 
+  if ( value >= maxInCart) {
+    setExceededMaxInCart(true);
+    setTimeout(() => {
+      setExceededMaxInCart(false);
+    }, 1000); 
+  }
+
+};
+
+
 
   const handleColorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const color = event.target.value;
@@ -133,33 +152,45 @@ useEffect(() => {
     setSelectedSize(size);
   };
 
-  const handleAddToCart = () => {
-  
-    const cartItem: CartItem = {
-      ...product,
-      quantity: counter,
-      selectedColor: selectedColor,
-      selectedSize: selectedSize,
-    };
-  
-    addToCart(cartItem);
-  
+  const colorsArray: string[] = product?.colors
+  ? product.colors.map((colorObject: { color: string }) => colorObject.color)
+  : [];
+
+
+  const calculateFinalPrice = (product: Product): number => {
+    const originalPrice = product?.unit_price || 0;
+    const discountPercentage = product?.discount || 0;
+    return originalPrice - (originalPrice * (discountPercentage / 100));
   };
   
+
+  const handleAddToCart = () => {
+  
+    // Verifica si hay suficiente stock antes de agregar al carrito
+     const hasEnoughStock = checkStock(product, selectedColor, selectedSize);
+   
+     if (hasEnoughStock) {
+       const cartItem: CartItem = {
+         ...product,
+         quantity: counter,
+         selectedColor: selectedColor,
+         selectedSize: selectedSize,
+       };
+       addToCart(cartItem);
+       setCounter(1);
+     } else {
+       setShowError(true);
+       setTimeout(() => {
+         setShowError(false);
+       }, 1000); 
+     }
+   };
+   
+  
   
   
 
-  const colorsArray: string[] = product?.colors
-    ? product.colors.map((colorObject: { color: string }) => colorObject.color)
-    : [];
- 
 
-    const calculateFinalPrice = (product: Product): number => {
-      const originalPrice = product?.unit_price || 0;
-      const discountPercentage = product?.discount || 0;
-      return originalPrice - (originalPrice * (discountPercentage / 100));
-    };
-    
   return (
     <Box
       sx={{
@@ -376,7 +407,7 @@ useEffect(() => {
           >
             <IconButton
               color="primary"
-              onClick={() => handleCounterChange(counter - 1)}
+              onClick={() => handleCounterChange(counter - 1, product, selectedColor, selectedSize)}
               sx={{ color: customColors.primary.main }}
             >
               <RemoveIcon />
@@ -386,7 +417,7 @@ useEffect(() => {
             </Typography>
             <IconButton
               color="primary"
-              onClick={() => handleCounterChange(counter + 1)}
+              onClick={() => handleCounterChange(counter + 1, product, selectedColor, selectedSize)}
               sx={{ color: customColors.primary.main }}
             >
               <AddIcon />
@@ -413,16 +444,18 @@ useEffect(() => {
           </Button>
         </CardActions>
   
-        {typeof id !== 'undefined' && getQuantityById(id.toString()) && (
-          <Typography variant="h6">
-            Ya tienes {getTotalQuantity()} en el carrito
-          </Typography>
+        {showError && (
+          <div style={{ color: 'red', marginTop: '10px', textAlign: 'center', }}>
+            <p>No hay suficiente stock para este producto.</p>
+          </div>
         )}
-        {typeof id !== 'undefined' && product?.stock === getQuantityById(id.toString()) && (
-          <Typography variant="h6">
-            Ya tienes el máximo en el carrito
-          </Typography>
+
+        {  exceededMaxInCart && (
+          <div style={{ color: 'red', marginTop: '10px', textAlign: 'center', }}>
+          <p>Tienes el máximo disponible.</p>
+        </div>
         )}
+
       </Card>
     </Box>
   );

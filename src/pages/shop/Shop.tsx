@@ -184,7 +184,7 @@ const Shop: React.FC = () => {
   const productPriceStyles = {
     fontSize: "1.2rem",
     color: customColors.primary.main,
-    marginBottom: '16px',
+    marginBottom: '24px',
   };
 
   const productDetailStyles = {

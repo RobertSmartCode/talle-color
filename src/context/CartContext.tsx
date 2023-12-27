@@ -30,7 +30,8 @@ interface CartContextData {
   setCustomerInformation: (info: CustomerInfo) => void;
   updateCustomerInformation: (info: Partial<CustomerInfo>) => void; 
   getCustomerInformation: () => CustomerInfo | null; 
-  checkStock: (product: Product, color: string, size: string) => boolean; 
+  checkStock: (product: Product, color: string, size: string) => boolean;
+  getStockForProduct: (product: Product, color: string, size: string) => number;
 }
 
 
@@ -301,8 +302,6 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
 
     const combinedKey = `${product.id}-${color}-${size}`;
 
-    
-    // Obtener la cantidad disponible en el inventario
       // Obtener la cantidad disponible en el inventario
       const inventoryQuantity = product?.colors
       .find((colorObject: { color: string }) => colorObject.color === color)
@@ -316,6 +315,24 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
     const hasEnoughStock = inventoryQuantity > cartQuantity;
 
     return hasEnoughStock;
+  };
+
+  const getStockForProduct = (product: Product, color: string, size: string): number => {
+    const combinedKey = `${product.id}-${color}-${size}`;
+
+      // Obtener la cantidad disponible en el inventario
+      const inventoryQuantity = product?.colors
+      .find((colorObject: { color: string }) => colorObject.color === color)
+      ?.quantities.find((_, index: number) => product?.colors[index]?.sizes.includes(size)) || 0;
+
+          
+    // Obtener la cantidad en el carrito
+    const cartQuantity = productQuantities[combinedKey] || 0;
+
+    // Calcular el stock disponible restando la cantidad en el carrito del inventario
+    const availableStock = inventoryQuantity - cartQuantity;
+
+    return Math.max(0, availableStock); // Asegurarse de que el stock no sea negativo
   };
 
 
@@ -339,7 +356,8 @@ const updateCustomerInformation = (info: Partial<CustomerInfo>) => {
     setCustomerInformation,
     getCustomerInformation,
     updateCustomerInformation,
-    checkStock
+    checkStock,
+    getStockForProduct
   };
 
   return <CartContext.Provider value={data}>{children}</CartContext.Provider>;

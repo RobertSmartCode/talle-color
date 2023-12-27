@@ -8,7 +8,6 @@ import {
 } from "@mui/material";
 
 
-
 import { Outlet } from "react-router-dom";
 
 import MobileMenuList from "./MobileMenuList/MobileMenuList";

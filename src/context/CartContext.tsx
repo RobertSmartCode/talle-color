@@ -85,11 +85,12 @@ const CartContextComponent: React.FC<CartContextComponentProps> = ({ children })
   
   const [cart, setCart] = useState<CartItem[]>([]);
   const [productQuantities, setProductQuantities] = useState<{ [combinedKey: string]: number }>({});
+  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
+
 
   const [selectedShippingMethod, setSelectedShippingMethod] = useState<ShippingMethod | null>(null);
   const [shippingCost, setShippingCost] = useState<number>(0);
-  const [customerInfo, setCustomerInfo] = useState<CustomerInfo | null>(null);
-
+ 
 
 const updateShippingInfo = (method: ShippingMethod, cost: number) => {
   setSelectedShippingMethod(method);

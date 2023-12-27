@@ -13,12 +13,14 @@ import {
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { CartContext } from '../../context/CartContext';
-import { Product } from '../../type/type';
+import { Product, ShippingMethod } from '../../type/type';
 
+
+const SHIPPING_METHODS_STORAGE_KEY = "shippingMethods";
 
 const CartCheckout = () => {
 
-  const { cart, getSelectedShippingMethod, getTotalPrice, discountInfo } = useContext(CartContext)! || {};
+  const { cart, getTotalPrice, discountInfo, getSelectedShippingMethod  } = useContext(CartContext)! || {};
   const [productQuantities, setProductQuantities] = useState<{ [combinedKey: string]: number }>({});
 
 
@@ -32,11 +34,11 @@ const CartCheckout = () => {
   // Función para calcular el subtotal sin envío
   const subtotal = getTotalPrice ? getTotalPrice() : 0;
 
-  
-  const selectedShippingMethod= getSelectedShippingMethod()
-  
-  const shippingCost = selectedShippingMethod ? selectedShippingMethod.price : 0;
-  
+
+const storedShippingMethods = JSON.parse(localStorage.getItem(SHIPPING_METHODS_STORAGE_KEY) || "[]");
+const selectedShippingMethod = storedShippingMethods.find((method: ShippingMethod) => method.selected) || null;
+const shippingCost = (getSelectedShippingMethod() || selectedShippingMethod)?.price || 0;
+
 
 
   const discountPercentage = discountInfo?.discountPercentage ?? 0;

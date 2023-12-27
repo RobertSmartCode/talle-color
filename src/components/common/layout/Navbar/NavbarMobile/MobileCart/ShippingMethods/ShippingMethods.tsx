@@ -15,7 +15,6 @@ interface ShippingMethodsProps {
   initialSelectedMethod: ShippingMethod | null;
 }
 
-const SHIPPING_METHODS_STORAGE_KEY = "shippingMethods";
 
 const ShippingMethods: React.FC<ShippingMethodsProps> = ({
   onSelectMethod,
@@ -24,13 +23,7 @@ const ShippingMethods: React.FC<ShippingMethodsProps> = ({
   const [methods, setMethods] = useState<ShippingMethod[]>([]);
 
   useEffect(() => {
-    const storedMethods = JSON.parse(localStorage.getItem(SHIPPING_METHODS_STORAGE_KEY) || "[]");
-
-    if (storedMethods.length > 0) {
-      setMethods(storedMethods);
-    } else {
-      fetchShippingMethods();
-    }
+    fetchShippingMethods();
   }, []);
 
   useEffect(() => {
@@ -38,7 +31,7 @@ const ShippingMethods: React.FC<ShippingMethodsProps> = ({
       const initialMethod = methods.find((m) => m.id === initialSelectedMethod.id);
       if (initialMethod) {
         initialMethod.selected = true;
-        saveMethodsToLocalStorage();
+      
       }
     }
   }, [initialSelectedMethod, methods]);
@@ -61,15 +54,13 @@ const ShippingMethods: React.FC<ShippingMethodsProps> = ({
       });
 
       setMethods(methodsData);
-      saveMethodsToLocalStorage();
+     
     } catch (error) {
       console.error("Error al obtener los métodos de envío:", error);
     }
   };
 
-  const saveMethodsToLocalStorage = () => {
-    localStorage.setItem(SHIPPING_METHODS_STORAGE_KEY, JSON.stringify(methods));
-  };
+
 
   return (
     <Grid container spacing={2}>
@@ -83,7 +74,7 @@ const ShippingMethods: React.FC<ShippingMethodsProps> = ({
               }));
               setMethods(updatedMethods);
               onSelectMethod(method);
-              saveMethodsToLocalStorage();
+             
             }}
             style={{
               cursor: "pointer",
@@ -118,7 +109,7 @@ const ShippingMethods: React.FC<ShippingMethodsProps> = ({
                     }));
                     setMethods(updatedMethods);
                     onSelectMethod(method);
-                    saveMethodsToLocalStorage();
+                   
                   }}
                   style={{ marginRight: "10px" }}
                 />

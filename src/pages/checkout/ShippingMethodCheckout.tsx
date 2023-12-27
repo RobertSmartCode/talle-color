@@ -15,11 +15,9 @@ import { CartContext } from "../../context/CartContext";
 
 import { ShippingMethod } from "../../type/type";
 
-const SHIPPING_METHODS_STORAGE_KEY = "shippingMethods";
 
 const ShippingMethodCheckout = () => {
-  const { updateShippingInfo, getSelectedShippingMethod } =
-    useContext(CartContext)!;
+  const { updateShippingInfo, getSelectedShippingMethod } = useContext(CartContext)!;
 
   const initialSelectedMethod = getSelectedShippingMethod();
 
@@ -32,15 +30,7 @@ const ShippingMethodCheckout = () => {
   const [showAllOptions, setShowAllOptions] = useState(false);
 
   useEffect(() => {
-    const storedMethods = JSON.parse(
-      localStorage.getItem(SHIPPING_METHODS_STORAGE_KEY) || "[]"
-    );
-
-    if (storedMethods.length > 0) {
-      setMethods(storedMethods);
-    } else {
-      fetchShippingMethods();
-    }
+    fetchShippingMethods();
   }, []);
 
   useEffect(() => {
@@ -50,7 +40,6 @@ const ShippingMethodCheckout = () => {
       );
       if (initialMethod) {
         initialMethod.selected = true;
-        saveMethodsToLocalStorage();
       }
     }
   }, [initialSelectedMethod, methods]);
@@ -90,12 +79,6 @@ const ShippingMethodCheckout = () => {
     setShowAllOptions(false);
   };
 
-  const saveMethodsToLocalStorage = () => {
-    localStorage.setItem(
-      SHIPPING_METHODS_STORAGE_KEY,
-      JSON.stringify(methods)
-    );
-  };
 
   return (
     <Box>

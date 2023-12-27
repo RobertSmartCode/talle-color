@@ -18,8 +18,9 @@ import { Product } from '../../../../../../type/type';
 
 const CartItemList = () => {
   const { cart, deleteById, updateQuantityById } = useContext(CartContext)! || {};
-  const [productQuantities, setProductQuantities] = useState<{ [combinedKey: string]: number }>({});
-  const [exceededMaxInCart, setExceededMaxInCart] = useState(false);
+
+const [productQuantities, setProductQuantities] = useState<{ [combinedKey: string]: number }>({});
+const [exceededMaxInCart, setExceededMaxInCart] = useState<{ [combinedKey: string]: boolean }>({});
 
   // Función para calcular el subtotal sin envío
   const calculateSubtotal = () => {
@@ -41,14 +42,19 @@ const CartItemList = () => {
   
 
   useEffect(() => {
-    // Inicializa los contadores para cada producto en el carrito
     const initialQuantities: { [combinedKey: string]: number } = {};
+    const initialExceededMax: { [combinedKey: string]: boolean } = {};
+  
     cart.forEach((product) => {
       const combinedKey = `${product.id}-${product.selectedColor}-${product.selectedSize}`;
       initialQuantities[combinedKey] = product.quantity;
+      initialExceededMax[combinedKey] = false;
     });
+  
     setProductQuantities(initialQuantities);
+    setExceededMaxInCart(initialExceededMax);
   }, [cart]);
+  
 
 
 
@@ -56,9 +62,10 @@ const CartItemList = () => {
     const combinedKey = `${product.id}-${color}-${size}`;
   
     // Obtener la cantidad disponible en el inventario
-    const inventoryQuantity = product?.colors
-      .find((colorObject: { color: string }) => colorObject.color === color)
-      ?.quantities.find((_, index: number) => product?.colors[index]?.sizes.includes(size)) || 0;
+    const inventoryQuantity =
+      product?.colors
+        .find((colorObject: { color: string }) => colorObject.color === color)
+        ?.quantities.find((_, index: number) => product?.colors[index]?.sizes.includes(size)) || 0;
   
     // Verificar si el cambio propuesto está dentro del límite de stock disponible
     if (value >= 1 && value <= inventoryQuantity) {
@@ -68,15 +75,30 @@ const CartItemList = () => {
         [combinedKey]: value,
       }));
   
+      // Actualizar el estado de exceder el máximo solo para este producto
+      setExceededMaxInCart((prevExceeded) => ({
+        ...prevExceeded,
+        [combinedKey]: value >= inventoryQuantity,
+      }));
+  
       updateQuantityById(product.id, value, color, size);
-    }
-    if ( value >= inventoryQuantity) {
-      setExceededMaxInCart(true);
+    } else {
+      // Si el valor no está en el rango válido, activar el estado de exceder el máximo
+      setExceededMaxInCart((prevExceeded) => ({
+        ...prevExceeded,
+        [combinedKey]: true,
+      }));
+  
+      // Reiniciar el estado de exceder el máximo después de un tiempo
       setTimeout(() => {
-        setExceededMaxInCart(false);
-      }, 1000); 
+        setExceededMaxInCart((prevExceeded) => ({
+          ...prevExceeded,
+          [combinedKey]: false,
+        }));
+      }, 1000);
     }
   };
+  
   
 
 const calculateFinalPrice = (product: Product): number => {
@@ -165,7 +187,7 @@ return (
                       </Grid>
                     </Grid>
                   </CardContent>
-                  {exceededMaxInCart && (
+                  {exceededMaxInCart[`${product.id}-${product.selectedColor}-${product.selectedSize}`] && (
                     <CardContent style={{ color: 'red', marginTop: '10px', textAlign: 'center' }}>
                       <Typography variant="body1">Tienes el máximo disponible.</Typography>
                     </CardContent>

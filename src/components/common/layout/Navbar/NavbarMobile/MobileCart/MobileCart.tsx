@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CloseIcon from "@mui/icons-material/Close";
 import IconButton from '@mui/material/IconButton';
@@ -19,36 +19,24 @@ import {ShippingMethod} from "../../../../../../type/type"
 
 
 const MobileCart: React.FC = () => {
-  const [cartOpen, setCartOpen] = useState(false);
  
   
-
-
+  
+  const [cartOpen, setCartOpen] = useState(false);
+ 
   const { cart, getTotalPrice, getTotalQuantity,  updateShippingInfo, getSelectedShippingMethod } = useContext(CartContext)! ?? {};
 
-  const [selectedShippingMethod, setSelectedShippingMethod] = useState<ShippingMethod | null>(() => {
-    // Leer el método de envío seleccionado desde el localStorage al inicializar el estado
-    const storedMethod = localStorage.getItem("selectedShippingMethod");
-    return storedMethod ? JSON.parse(storedMethod) : null;
-  });
+
 
   
-
-
-  useEffect(() => {
-    const initialSelectedMethod = selectedShippingMethod || getSelectedShippingMethod();
-    setSelectedShippingMethod(initialSelectedMethod);
-
-    // Guardar el método de envío seleccionado en el localStorage
-    localStorage.setItem("selectedShippingMethod", JSON.stringify(initialSelectedMethod));
-  }, [getSelectedShippingMethod, selectedShippingMethod]);
-
+    
+const handleShippingMethodSelect = (method: ShippingMethod) => {
+  updateShippingInfo(method, method.price);
+};
 
 
   const isDesktop = useMediaQuery('(min-width: 768px)');
 
-
-  
   const handleCartClick = () => {
     setCartOpen(!cartOpen);
   };
@@ -56,19 +44,12 @@ const MobileCart: React.FC = () => {
 // Obtener el subtotal sin envío
 const subtotal = getTotalPrice ? getTotalPrice() : 0;
 
+
 // Obtener el costo de envío del método seleccionado
-const shippingCost = selectedShippingMethod ? selectedShippingMethod.price : 0;
+const shippingCost = (getSelectedShippingMethod())?.price || 0;
 
 // Calcular el total sumando el subtotal y el costo de envío
 const total = subtotal + shippingCost;
-
-const handleShippingMethodSelect = (method: ShippingMethod) => {
-  setSelectedShippingMethod(method);
-  updateShippingInfo(method, method.price);
-
-  // Guardar el método de envío seleccionado en el localStorage
-  localStorage.setItem("selectedShippingMethod", JSON.stringify(method));
-};
 
 
 
@@ -198,7 +179,7 @@ const handleShippingMethodSelect = (method: ShippingMethod) => {
               <CartItemList />
               <ShippingMethods
               onSelectMethod={handleShippingMethodSelect}
-              initialSelectedMethod={selectedShippingMethod}
+              initialSelectedMethod={null}
             />
               <Box  style={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography style={{ fontSize: '1.2rem', fontWeight: 'bold', paddingLeft: '30px' }}>Total:</Typography>
@@ -212,19 +193,19 @@ const handleShippingMethodSelect = (method: ShippingMethod) => {
                   >
                 {/* Renderiza los productos del carrito aquí */}
                 
-                {!selectedShippingMethod && (
-                  <Typography style={{ fontSize: '1rem', color: 'red', marginTop: '30px' }}>
+                {!getSelectedShippingMethod() && (
+                  <Typography style={{ fontSize: '1rem', color: 'red', marginTop: '20px', marginBottom: '30px' }}>
                    Seleccione un método de envío para continuar.
                   </Typography>
                 )}
 
-                {selectedShippingMethod && (
+                {getSelectedShippingMethod() && (
                 <Link to="/checkout">
                 <Button
-                  sx={{ ...buyButtonStyles, backgroundColor: !selectedShippingMethod ? '#ccc' : buyButtonStyles.backgroundColor }}
+                  sx={{ ...buyButtonStyles, backgroundColor: !getSelectedShippingMethod()? '#ccc' : buyButtonStyles.backgroundColor }}
                   variant="contained"
                   size="medium"
-                  disabled={!selectedShippingMethod}
+                  disabled={!getSelectedShippingMethod()}
                 >
                   Iniciar Compra
                 </Button>

@@ -186,10 +186,11 @@ useEffect(() => {
         : (getCustomerInformation() as CustomerInfo) || {};
 
     // Actualizar los valores iniciales solo si el formulario no ha sido tocado
-    if (!formik.touched.email) {
+    
+    if (!formik.touched.country ) {
       // Establecer el correo electrónico en el formulario
       formik.setValues({
-        email: (user && myOrders.length === 0 ? user.email: currentUser.email ) || "",
+        email: currentUser.email || "",
         receiveOffers: currentUser.receiveOffers || false,
         country: currentUser.country || "",
         identificationDocument: currentUser.identificationDocument || "",
@@ -205,6 +206,9 @@ useEffect(() => {
         city: currentUser.city || "",
         postalCode: currentUser.postalCode || "",
         province: currentUser.province || "",
+        customerType: currentUser.customerType || "finalConsumer",
+        cuilCuit: currentUser.cuilCuit || "",
+        businessName: currentUser.businessName || "",
       });
     }
   }

@@ -5,9 +5,13 @@ import {
   TextField,
   Checkbox,
   FormControlLabel,
-  Button
-  
+  Button,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio
 } from "@mui/material";
+
 import { db } from "../../firebase/firebaseConfig";
 import { CartContext } from '../../context/CartContext';
 import { AuthContext } from "../../context/AuthContext";
@@ -28,8 +32,19 @@ import {
 const CheckoutForm = () => {
 
     const {getCustomerInformation, setCustomerInformation} = useContext(CartContext)! || {};
+
     const [myOrders, setMyOrders] = useState<Order[]>([]);
+
     const [initialValuesLoaded, setInitialValuesLoaded] = useState(false);
+
+    const [showInvoiceFields, setShowInvoiceFields] = useState(false);
+
+
+  const handleCustomerTypeChange = (event:any) => {
+    setShowInvoiceFields(event.target.value === "invoice");
+    formik.handleChange(event);
+  };
+
     
     const { user } = useContext(AuthContext)!;
 
@@ -56,7 +71,6 @@ const CheckoutForm = () => {
     
 
     const mapOrderToCustomerInfo = (order: Order): CustomerInfo => {
-      
       const userData = order.userData || {};
     
       return {
@@ -76,31 +90,40 @@ const CheckoutForm = () => {
         city: userData.city || "",
         postalCode: userData.postalCode || "",
         province: userData.province || "",
-       
+        customerType: userData.customerType || "finalConsumer",
+        cuilCuit: userData.cuilCuit || "",
+        businessName: userData.businessName || "",
+        
+      
       };
     };
+    
     
     const navigate = useNavigate();
 
       // Definir los valores iniciales
-    const initialValues: CustomerInfo = {
-      email: "",
-      receiveOffers: false,
-      country: "",
-      identificationDocument: "",
-      firstName: "",
-      lastName: "",
-      phone: "",
-      isOtherPerson: false,
-      otherPersonFirstName: "",
-      otherPersonLastName: "",
-      streetAndNumber: "",
-      department: "",
-      neighborhood: "",
-      city: "",
-      postalCode: "",
-      province: "",
-    };
+      const initialValues: CustomerInfo = {
+        email: "",
+        receiveOffers: false,
+        country: "",
+        identificationDocument: "",
+        firstName: "",
+        lastName: "",
+        phone: "",
+        isOtherPerson: false,
+        otherPersonFirstName: "",
+        otherPersonLastName: "",
+        streetAndNumber: "",
+        department: "",
+        neighborhood: "",
+        city: "",
+        postalCode: "",
+        province: "",
+        customerType: "finalConsumer",
+        cuilCuit: "",
+        businessName: "",
+      };
+      
  
       const validationSchema = Yup.object().shape({
         email: Yup.string()
@@ -141,6 +164,10 @@ const CheckoutForm = () => {
         city: values.city || "",
         postalCode: values.postalCode || "",
         province: values.province || "",
+        customerType: values.customerType || "finalConsumer",
+        cuilCuit: values.cuilCuit || "",
+        businessName: values.businessName || "",
+        
       };
 
       setCustomerInformation(customerData);
@@ -149,6 +176,7 @@ const CheckoutForm = () => {
     },
   });
 
+  
 // Verificar si los valores iniciales han sido cargados antes de inicializar el formulario
 useEffect(() => {
   if (initialValuesLoaded) {
@@ -161,7 +189,7 @@ useEffect(() => {
     if (!formik.touched.email) {
       // Establecer el correo electrónico en el formulario
       formik.setValues({
-        email: user && myOrders.length === 0 ? user.email : currentUser.email || "",
+        email: (user && myOrders.length === 0 ?  currentUser.email: user.email ) || "",
         receiveOffers: currentUser.receiveOffers || false,
         country: currentUser.country || "",
         identificationDocument: currentUser.identificationDocument || "",
@@ -181,6 +209,9 @@ useEffect(() => {
     }
   }
 }, [user, myOrders, getCustomerInformation, formik.touched.email, initialValuesLoaded]);
+
+
+
 
 // Marcar que los valores iniciales han sido cargados
 useEffect(() => {
@@ -296,6 +327,71 @@ useEffect(() => {
           error={formik.touched.phone && !!formik.errors.phone}
           helperText={formik.touched.phone && formik.errors.phone}
         />
+
+
+
+
+
+
+              {/* Elección de tipo de cliente: Consumidor Final o Factura A/B */}
+        <FormControl component="fieldset" style={{ marginTop: "20px" }}>
+        <FormLabel component="legend" style={titleStyle}>
+          Tipo de Cliente
+        </FormLabel>
+        <RadioGroup
+          row
+          aria-label="customerType"
+          name="customerType"
+          value={formik.values.customerType || ''} // Ensure value is not undefined
+          onChange={handleCustomerTypeChange}
+        >
+          <FormControlLabel
+            value="finalConsumer"
+            control={<Radio />}
+            label={<Typography style={{ color: 'black' }}>Consumidor Final</Typography>}
+          />
+          <FormControlLabel
+            value="invoice"
+            control={<Radio />}
+            label={<Typography style={{ color: 'black' }}>Factura A/B</Typography>}
+          />
+        </RadioGroup>
+
+      </FormControl>
+
+      {/* Additional fields for Invoice if it's selected */}
+      {showInvoiceFields && (
+        <>
+          {/* Other fields... */}
+          <TextField
+            fullWidth
+            label="CUIL/CUIT"
+            variant="outlined"
+            margin="normal"
+            name="cuilCuit"
+            value={formik.values.cuilCuit}
+            onChange={formik.handleChange}
+            error={formik.touched.cuilCuit && !!formik.errors.cuilCuit}
+            helperText={formik.touched.cuilCuit && formik.errors.cuilCuit}
+          />
+          <TextField
+            fullWidth
+            label="Razón Social"
+            variant="outlined"
+            margin="normal"
+            name="businessName"
+            value={formik.values.businessName}
+            onChange={formik.handleChange}
+            error={formik.touched.businessName && !!formik.errors.businessName}
+            helperText={formik.touched.businessName && formik.errors.businessName}
+          />
+        </>
+      )}
+
+
+
+
+
         <FormControlLabel
           control={
             <Checkbox
@@ -310,6 +406,8 @@ useEffect(() => {
             </Typography>
           }
         />
+
+
         {formik.values.isOtherPerson && (
           <>
             <Typography style={titleStyle}>
@@ -339,8 +437,14 @@ useEffect(() => {
             />
           </>
         )}
+
+
+
+
+
+
         <Typography variant="subtitle1" style={titleStyle}>
-          <strong>Datos del Domicilio de la Persona que Pagará el Pedido</strong>
+          <strong>Datos del Domicilio de Entrega</strong>
         </Typography>
         <TextField
           fullWidth

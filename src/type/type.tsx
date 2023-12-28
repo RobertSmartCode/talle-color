@@ -88,6 +88,9 @@ export interface CustomerInfo {
   city: string;
   postalCode: string;
   province: string;
+  customerType?: "finalConsumer" | "invoice"; // Nuevo campo para el tipo de cliente
+  cuilCuit?: string; // Nuevo campo para CUIL/CUIT
+  businessName?: string; // Nuevo campo para Razón Social
 
 }
 
@@ -120,5 +123,8 @@ export interface Order {
     city: string;
     postalCode: string;
     province: string;
+    customerType?: "finalConsumer" | "invoice"; // Nuevo campo para el tipo de cliente
+    cuilCuit?: string; // Nuevo campo para CUIL/CUIT
+    businessName?: string; // Nuevo campo para Razón Social
   };
 }

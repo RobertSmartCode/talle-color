@@ -189,7 +189,7 @@ useEffect(() => {
     if (!formik.touched.email) {
       // Establecer el correo electrónico en el formulario
       formik.setValues({
-        email: (user && myOrders.length === 0 ?  currentUser.email: user.email ) || "",
+        email: (user && myOrders.length === 0 ? user.email: currentUser.email ) || "",
         receiveOffers: currentUser.receiveOffers || false,
         country: currentUser.country || "",
         identificationDocument: currentUser.identificationDocument || "",

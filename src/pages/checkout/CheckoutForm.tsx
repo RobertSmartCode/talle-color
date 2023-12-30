@@ -39,11 +39,17 @@ const CheckoutForm = () => {
 
     const [showInvoiceFields, setShowInvoiceFields] = useState(false);
 
+    const [showError, setShowError] = useState(false);
 
-  const handleCustomerTypeChange = (event:any) => {
-    setShowInvoiceFields(event.target.value === "invoice");
-    formik.handleChange(event);
-  };
+
+
+    const handleCustomerTypeChange = (event: any) => {
+      // Restablecer el estado de showError al cambiar el tipo de cliente
+     
+      setShowInvoiceFields(event.target.value === "invoice");
+      formik.handleChange(event);
+    };
+
 
     
     const { user } = useContext(AuthContext)!;
@@ -123,12 +129,13 @@ const CheckoutForm = () => {
         cuilCuit: "",
         businessName: "",
       };
+
+   
+      
       
  
       const validationSchema = Yup.object().shape({
-        email: Yup.string()
-          .email("Correo electrónico inválido")
-          .required("Campo requerido"),
+        email: Yup.string().email("Correo electrónico inválido").required("Campo requerido"),
         country: Yup.string().required("Campo requerido"),
         identificationDocument: Yup.string().required("Campo requerido"),
         firstName: Yup.string().required("Campo requerido"),
@@ -138,8 +145,9 @@ const CheckoutForm = () => {
         city: Yup.string().required("Campo requerido"),
         postalCode: Yup.string().required("Campo requerido"),
         province: Yup.string().required("Campo requerido"),
+       
       });
-
+    
     
     
   // Utilizar formik para manejar el formulario
@@ -178,6 +186,7 @@ const CheckoutForm = () => {
 
   
 // Verificar si los valores iniciales han sido cargados antes de inicializar el formulario
+
 useEffect(() => {
   if (initialValuesLoaded) {
     const currentUser =
@@ -186,8 +195,7 @@ useEffect(() => {
         : (getCustomerInformation() as CustomerInfo) || {};
 
     // Actualizar los valores iniciales solo si el formulario no ha sido tocado
-    
-    if (!formik.touched.country ) {
+    if (!formik.touched.email) {
       // Establecer el correo electrónico en el formulario
       formik.setValues({
         email: currentUser.email || "",
@@ -210,6 +218,11 @@ useEffect(() => {
         cuilCuit: currentUser.cuilCuit || "",
         businessName: currentUser.businessName || "",
       });
+
+      // Verificar si el tipo de cliente es "invoice" y actualizar showInvoiceFields
+      if (currentUser.customerType === "invoice") {
+        setShowInvoiceFields(true);
+      }
     }
   }
 }, [user, myOrders, getCustomerInformation, formik.touched.email, initialValuesLoaded]);
@@ -235,9 +248,104 @@ useEffect(() => {
     fontSize: "12px",
   };
 
+// Función de validación para CUIL/CUIT
+const validateCuilCuit = (value: string) => {
+  if (!value) {
+    return "Campo requerido";
+  }
+  // Puedes agregar más lógica de validación específica si es necesario
+  return "";
+};
+
+// Función de validación para Razón Social
+const validateBusinessName = (value: string) => {
+  if (!value) {
+    return "Campo requerido";
+  }
+  // Puedes agregar más lógica de validación específica si es necesario
+  return "";
+};
+
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      await formik.validateForm(); // Validar el formulario con formik
+      formik.setSubmitting(true); // Establecer el indicador de envío a true
+
+      // Verificar si el tipo de cliente es "invoice" para aplicar las validaciones específicas
+    if (formik.values.customerType === 'invoice') {
+      // Validación específica para CUIL/CUIT
+      const cuilCuitError = validateCuilCuit(formik.values.cuilCuit || "");
+      
+      formik.setFieldError("cuilCuit", cuilCuitError);
+
+      // Validación específica para Razón Social
+      const businessNameError = validateBusinessName(formik.values.businessName || "");
+    
+      formik.setFieldError("businessName", businessNameError);
+
+      // Verificar si hay errores en las validaciones específicas antes de continuar
+      if (cuilCuitError || businessNameError) {
+        setShowError(true)
+
+        setTimeout(() => {
+          setShowError(false);
+        }, 5000); 
+        return;
+      }
+    }
+
+      const customerData: CustomerInfo = {
+        email: formik.values.email || "",
+        receiveOffers: formik.values.receiveOffers || false,
+        country: formik.values.country || "",
+        identificationDocument: formik.values.identificationDocument || "",
+        firstName: formik.values.firstName || "",
+        lastName: formik.values.lastName || "",
+        phone: formik.values.phone || "",
+        isOtherPerson: formik.values.isOtherPerson || false,
+        otherPersonFirstName: formik.values.otherPersonFirstName || "",
+        otherPersonLastName: formik.values.otherPersonLastName || "",
+        streetAndNumber: formik.values.streetAndNumber || "",
+        department: formik.values.department || "",
+        neighborhood: formik.values.neighborhood || "",
+        city: formik.values.city || "",
+        postalCode: formik.values.postalCode || "",
+        province: formik.values.province || "",
+        customerType: formik.values.customerType || "finalConsumer",
+        cuilCuit: formik.values.cuilCuit || "",
+        businessName: formik.values.businessName || "",
+      };
+
+      setCustomerInformation(customerData);
+
+      navigate("/checkout/next");
+
+
+
+    } catch (error) {
+      // Manejar errores y actualizar el estado de los errores
+      if (error instanceof Yup.ValidationError) {
+        const validationErrors: { [key: string]: string } = {};
+        error.inner.forEach((e) => {
+          if (e.path) {
+            validationErrors[e.path] = e.message;
+          }
+        });
+        formik.setErrors(validationErrors);
+      } else {
+        formik.setSubmitting(false); // Establecer el indicador de envío a false
+      }
+    } 
+  };
+  
+  
+  
  
   return (
-    <form onSubmit={formik.handleSubmit}>
+    <form onSubmit={handleSubmit}>
       <Box maxWidth="400px" margin="0 auto" padding="25px">
         <Typography variant="h6" align="left" style={titleStyle}>
           <strong>Datos de Contacto</strong>
@@ -254,6 +362,7 @@ useEffect(() => {
           error={formik.touched.email && !!formik.errors.email}
           helperText={formik.touched.email && formik.errors.email}
         />
+        
         <FormControlLabel
           control={
             <Checkbox
@@ -364,34 +473,40 @@ useEffect(() => {
       </FormControl>
 
       {/* Additional fields for Invoice if it's selected */}
-      {showInvoiceFields && (
+
+    
+      { showError && (
         <>
-          {/* Other fields... */}
-          <TextField
-            fullWidth
-            label="CUIL/CUIT"
-            variant="outlined"
-            margin="normal"
-            name="cuilCuit"
-            value={formik.values.cuilCuit}
-            onChange={formik.handleChange}
-            error={formik.touched.cuilCuit && !!formik.errors.cuilCuit}
-            helperText={formik.touched.cuilCuit && formik.errors.cuilCuit}
-          />
-          <TextField
-            fullWidth
-            label="Razón Social"
-            variant="outlined"
-            margin="normal"
-            name="businessName"
-            value={formik.values.businessName}
-            onChange={formik.handleChange}
-            error={formik.touched.businessName && !!formik.errors.businessName}
-            helperText={formik.touched.businessName && formik.errors.businessName}
-          />
+          <Typography variant="body1" color="error" component="span">
+          CUIL/CUIT y Razón Social son Obligatorios
+          </Typography>
         </>
       )}
-
+      
+      {showInvoiceFields && (
+        <>
+          <TextField
+          fullWidth
+          label="CUIL/CUIT"
+          variant="outlined"
+          margin="normal"
+          name="cuilCuit"
+          value={formik.values.cuilCuit}
+          onChange={formik.handleChange}
+         
+        />
+        <TextField
+          fullWidth
+          label="Razón Social"
+          variant="outlined"
+          margin="normal"
+          name="businessName"
+          value={formik.values.businessName}
+          onChange={formik.handleChange}
+         
+        />
+        </>
+      )}
 
 
 
@@ -516,22 +631,22 @@ useEffect(() => {
           error={formik.touched.province && !!formik.errors.province}
           helperText={formik.touched.province && formik.errors.province}
         />
+
+        { showError && (
+                <Box display="flex" justifyContent="center" marginTop="20px">
+                  <Typography variant="body1" color="error" component="span" style={{ textAlign: 'center' }}>
+                    Revisa el Formulario
+                  </Typography>
+                  </Box>
+        )}
          <Box display="flex" justifyContent="center" marginTop="20px">
             
-         <Button
-          variant="contained"
-          color="primary"
-          type="button" // Cambiar "submit" a "button" para evitar el envío automático
-          onClick={() => {
-          if (formik.isValid) {
-            formik.handleSubmit(); // Ejecuta la validación y el envío manualmente
-              }
-            }}
-          >
-          Continuar
-         </Button>
-
+          <Button variant="contained" color="primary" type="submit">
+            Continuar
+          </Button>
         </Box>
+        
+     
       </Box>
     </form>
   );

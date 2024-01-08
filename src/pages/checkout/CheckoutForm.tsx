@@ -41,18 +41,13 @@ const CheckoutForm = () => {
 
     const [showError, setShowError] = useState(false);
 
+    const { user } = useContext(AuthContext)!;
 
 
     const handleCustomerTypeChange = (event: any) => {
-      // Restablecer el estado de showError al cambiar el tipo de cliente
-     
       setShowInvoiceFields(event.target.value === "invoice");
       formik.handleChange(event);
     };
-
-
-    
-    const { user } = useContext(AuthContext)!;
 
 
     useEffect(() => {
@@ -75,7 +70,7 @@ const CheckoutForm = () => {
     }, [user.email]);
 
     
-
+    // Si el usuario está logueado e hizo una orden llenará la información del usuario con la información de la orden
     const mapOrderToCustomerInfo = (order: Order): CustomerInfo => {
       const userData = order.userData || {};
     
@@ -323,8 +318,6 @@ const validateBusinessName = (value: string) => {
 
       navigate("/checkout/next");
 
-
-
     } catch (error) {
       // Manejar errores y actualizar el estado de los errores
       if (error instanceof Yup.ValidationError) {
@@ -478,13 +471,23 @@ const validateBusinessName = (value: string) => {
       { showError && (
         <>
           <Typography variant="body1" color="error" component="span">
-          CUIL/CUIT y Razón Social son Obligatorios
+       Razón Social y CUIL/CUIT son Obligatorios
           </Typography>
         </>
       )}
       
       {showInvoiceFields && (
         <>
+           <TextField
+          fullWidth
+          label="Razón Social"
+          variant="outlined"
+          margin="normal"
+          name="businessName"
+          value={formik.values.businessName}
+          onChange={formik.handleChange}
+         
+        />
           <TextField
           fullWidth
           label="CUIL/CUIT"
@@ -495,21 +498,8 @@ const validateBusinessName = (value: string) => {
           onChange={formik.handleChange}
          
         />
-        <TextField
-          fullWidth
-          label="Razón Social"
-          variant="outlined"
-          margin="normal"
-          name="businessName"
-          value={formik.values.businessName}
-          onChange={formik.handleChange}
-         
-        />
         </>
       )}
-
-
-
 
         <FormControlLabel
           control={

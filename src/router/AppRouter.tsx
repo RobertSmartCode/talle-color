@@ -11,6 +11,8 @@ import UserOrders from "../pages/UserAccount/UserAccount";
 import ProtectedAdmin from "./ProtectedAdmin";
 import ProtectedUsers from "./ProtectedUsers";
 import PaymentSuccess  from "../pages/checkout/PaymentSuccess";
+import PendingVerification from "../pages/checkout/PendingVerification";
+
 
 const AppRouter = () => {
   return (
@@ -53,8 +55,11 @@ const AppRouter = () => {
        {/* CheckoutNext */}
        <Route path="/checkout/next" element={<CheckoutNext />} /> 
 
-        {/* CheckoutLogin */}
+        {/* Paymentsuccess*/}
         <Route path="/checkout/paymentsuccess" element={<PaymentSuccess />} /> 
+
+          {/* PendingVerification*/}
+          <Route path="/checkout/pendingverification" element={<PendingVerification />} /> 
 
       <Route path="*" element={<h1>Not found</h1>} />
     </Routes>

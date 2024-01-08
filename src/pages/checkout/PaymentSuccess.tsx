@@ -18,6 +18,8 @@ const PaymentSuccess = () => {
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
+
+  // Esto viene del auto Return Creo que se debería quitar y esto usarlo para Next
   const paramValue = queryParams.get("status"); // approved --- reject
 
   const [orderSaved, setOrderSaved] = useState(false);
@@ -32,7 +34,12 @@ const PaymentSuccess = () => {
 
     if (paramValue === "approved" && !orderSaved && Object.keys(order).length > 0) {
       let ordersCollection = collection(db, "orders");
-      addDoc(ordersCollection, { ...order, date: serverTimestamp() });
+      addDoc(ordersCollection, 
+      { ...order,
+        date: serverTimestamp(),
+        status: "approved",
+        paymentType: "mercado pago", 
+       });
       setOrderSaved(true); // Marcar como guardado para que no se repita
     }
 

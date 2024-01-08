@@ -6,12 +6,13 @@ import { CartContext } from '../../context/CartContext';
 
 
 const MercadoPagoPayment = () => {
+
   const { cart, getSelectedShippingMethod, getTotalPrice, discountInfo, getCustomerInformation } = useContext(CartContext)! || {};
-  const [preferenceId, setPreferenceId] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const subtotal = getTotalPrice ? getTotalPrice() : 0;
   const selectedShippingMethod = getSelectedShippingMethod();
 
+  const [preferenceId, setPreferenceId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const shippingCost = selectedShippingMethod ? selectedShippingMethod.price : 0;
   const discountPercentage = discountInfo?.discountPercentage ?? 0;
@@ -37,7 +38,7 @@ const userData = getCustomerInformation()
       locale: "es-AR",
     });
 
-    // Luego de la inicialización, llama a createPreference automáticamente
+    
     createPreference();
 
 
@@ -73,7 +74,7 @@ const userData = getCustomerInformation()
     } catch (error) {
       console.log(error);
     } finally {
-      setIsLoading(false); // Desactiva la carga cuando se completa
+      setIsLoading(false);
     }
   };
 

@@ -9,7 +9,6 @@ import { TransferPayment } from "./TransferPayment";
 import { CashPayment } from "./CashPayment";
 
 
-
 const CheckoutNext: React.FC = () => {
 
   return (

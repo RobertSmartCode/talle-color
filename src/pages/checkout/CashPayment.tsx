@@ -36,6 +36,7 @@ const CashPayment = () => {
       userData,
       items: cart,
       shippingCost,
+      shippingMethod: selectedShippingMethod ? selectedShippingMethod.name : 'No shipping method',
       total,
       date: serverTimestamp(),
       status: "pending",

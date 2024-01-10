@@ -12,8 +12,6 @@ import {
 
 import CloseIcon from "@mui/icons-material/Close";
 
-
-
 const customColors = {
     primary: {
       main: '#000',

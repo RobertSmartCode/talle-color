@@ -22,7 +22,8 @@ export interface Product {
   material: string; 
   details: string; 
   selectedColor: string; 
-  selectedSize: string;  
+  selectedSize: string;
+  
 }
 
 export interface CartItem extends Product {
@@ -103,9 +104,11 @@ export interface Order {
     quantity: number;
     unit_price: number;
     images: string
+    sku:string
   }>;
   shippingCost: number;
   total: number;
+  paymentType:  string;
   userData: {
     email: string;
     receiveOffers: boolean;

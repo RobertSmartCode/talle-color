@@ -30,6 +30,7 @@ const MercadoPagoPayment = () => {
 
 const userData = getCustomerInformation()
 
+console.log(selectedShippingMethod)
 
 
   useEffect(() => {
@@ -46,7 +47,9 @@ const userData = getCustomerInformation()
       userData,
       items: cart,
       shippingCost,
+      shippingMethod: selectedShippingMethod ? selectedShippingMethod.name : 'No shipping method',
       total
+
       
     };
     localStorage.setItem("order", JSON.stringify(order));

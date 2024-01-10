@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { db } from "../../../firebase/firebaseConfig";
+
 import {
   getDocs,
   collection,
@@ -14,30 +15,35 @@ import {
 } from '@mui/material';
 
 import 'firebase/firestore';
-import {Order } from "../../../type/type"
+import {Order} from "../../../type/type"
 
 const MyOrdersDesktop : React.FC = () => {
-  const [myOrders, setMyOrders] = useState<Order[]>([]);
- 
-  useEffect(() => {
-    const ordersCollection = collection(db, "orders");
-   
 
+  const [myOrders, setMyOrders] = useState<Order[]>([]);
+
+  useEffect(() => {
+    console.log("Ejecutando useEffect");
+  
+    const ordersCollection = collection(db, "orders");
+  
     getDocs(ordersCollection)
       .then((res) => {
         const newArr: Order[] = res.docs.map((order) => ({
           ...(order.data() as DocumentData),
           id: order.id,
         })) as Order[];
+       
         setMyOrders(newArr);
+       
+    
       })
       .catch((error) => console.log(error));
   }, []);
+  
 
-
+  console.log(myOrders);
   return (
     <div  style={{ padding: "0px", margin:"0px"}} >
-       
        {myOrders.map((order) => (
   <Card key={order.id}  style={{ marginTop: '10px', marginRight: '110px' }}>
     <CardContent>
@@ -46,8 +52,12 @@ const MyOrdersDesktop : React.FC = () => {
       </Typography>
       {/* Agregar detalles del cliente */}
       <Typography variant="h6">
-        Cliente: {order.userData.firstName} {order.userData.lastName}
+        Cliente: {order.userData.firstName} 
       </Typography>
+      <Typography variant="body1">
+        Método de envio: {order.paymentType} 
+      </Typography>
+      
       <Typography variant="body1">
         Teléfono: {order.userData.phone}
       </Typography>
@@ -92,11 +102,16 @@ const MyOrdersDesktop : React.FC = () => {
                     }}
                   />
                 </Grid>
+
                 <Grid item xs={4}>
                   <Typography variant="body2">
                     {product.title} x {product.quantity}
                   </Typography>
+                  <Typography variant="body2">
+                   Código del producto: {product.sku}
+                  </Typography>
                 </Grid>
+                
                 <Grid item xs={4} style={{ textAlign: 'right' }}>
                   <Typography variant="body1">
                     ${product.unit_price * product.quantity}

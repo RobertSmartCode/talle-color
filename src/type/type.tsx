@@ -107,6 +107,7 @@ export interface Order {
     sku:string
   }>;
   shippingCost: number;
+  shippingMethod: string;
   total: number;
   paymentType:  string;
   userData: {

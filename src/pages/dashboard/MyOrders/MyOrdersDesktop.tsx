@@ -53,7 +53,10 @@ const MyOrdersDesktop : React.FC = () => {
         Cliente: {order.userData.firstName} 
       </Typography>
       <Typography variant="body1">
-        Método de envio: {order.paymentType} 
+        Método de Pago: {order.paymentType} 
+      </Typography>
+      <Typography variant="body1">
+        Método de envio: {order.shippingMethod} 
       </Typography>
       
       <Typography variant="body1">

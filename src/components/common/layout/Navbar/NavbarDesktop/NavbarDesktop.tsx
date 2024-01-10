@@ -1,5 +1,12 @@
-import { AppBar, Toolbar, CssBaseline, Grid, Box, Divider } from "@mui/material";
-import PromotionBar from "./PromotionBar/PromotionBar";
+import {
+  AppBar,
+  Toolbar,
+  CssBaseline,
+  Grid,
+  Box,
+  Divider,
+} from "@mui/material";
+// import PromotionBar from "./PromotionBar/PromotionBar";
 import Logo from "./Logo/Logo";
 import SearchBar from "./SearchBar/SearchBar";
 import MenuButton from "./MenuButton/MenuButton";
@@ -15,50 +22,51 @@ const NavbarDesktop = () => {
         <Toolbar>
           <Grid container spacing={2} alignItems="center">
             {/* Parte superior (25% del espacio) */}
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <PromotionBar />
-            </Grid>
+            </Grid> */}
 
-            <Grid item container lg={12}>
+            <Grid container item lg={12} alignItems="center">
               {/* Logo a la izquierda */}
-              <Grid item xs={3}>
+              <Grid item xs={12} sm={3} md={3} lg={3}>
                 <Logo />
               </Grid>
 
+             
               {/* Barra de búsqueda en el centro */}
-              <Grid item xs={7}>
-                <SearchBar />
-              </Grid>
+            <Grid item xs={12} sm={6} md={6} lg={6}>
+              {/* Puedes usar el componente SearchBar y ajustar sus estilos según tus necesidades */}
+              <SearchBar />
+            </Grid>
 
-                {/* Login y Carrito de Compra */}
-              <Grid item container xs={2} justifyContent="space-between" spacing={1}>
-                <Grid item>
-                  <LoginButton />
-                </Grid>
-                <Grid item>
-                  <MobileCart />
-                </Grid> 
+            {/* Login y Carrito de Compra */}
+            <Grid item container xs={12} sm={2} md={2} lg={2} justifyContent="flex-end" spacing={5}>
+              <Grid item>
+                {/* Ajusta estilos según tus necesidades */}
+                <LoginButton />
               </Grid>
+              <Grid item>
+                {/* Ajusta estilos según tus necesidades */}
+                <MobileCart />
+              </Grid>
+            </Grid>
             </Grid>
           </Grid>
         </Toolbar>
-             {/* Parte inferior categorias y tienda (25% del espacio) */}
-             <Grid container item lg={12} spacing={2} alignItems="center" justifyContent="center" style={{ height: '100%' }}>
-              <Grid item lg={12}>
-                <Divider sx={{ backgroundColor: 'black', height: '0.1px'}} />
-              </Grid>
-              <Grid item lg={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
-                <MenuButton />
-              </Grid>
-            </Grid>
-
-
       </AppBar>
 
+      {/* Parte inferior categorías y tienda (25% del espacio) */}
+      <Grid container item lg={12} justifyContent="center">
+        <Grid item lg={12}>
+          <Divider sx={{ backgroundColor: 'black', height: '0.1px' }} />
+        </Grid>
+        <Grid item lg={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '12px' }}>
+          <MenuButton />
+        </Grid>
+      </Grid>
 
-            {/* Contenedor component="main" para <Outlet /> */}
-      
-            <Box
+      {/* Contenedor component="main" para <Outlet /> */}
+      <Box
         component="main"
         sx={{
           flexGrow: 1,

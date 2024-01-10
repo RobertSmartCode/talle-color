@@ -6,7 +6,7 @@ const MobileLogo: React.FC = () => {
   const alt = 'Logo móvil'; 
   const width = '50px'; // Ancho opcional para el logo móvil
   const height = 'auto'; // Altura opcional para el logo móvil
-  const logoUrl = "https://firebasestorage.googleapis.com/v0/b/pinguinos-kids.appspot.com/o/LogoMobile%2FInfinty2.PNG?alt=media&token=a7524908-493f-4a63-b6ae-fa776fd66dca";
+   const logoUrl = import.meta.env.VITE_LOGO_MOBILE
 
   return (
     <Box marginLeft="0px" marginRight="0px">

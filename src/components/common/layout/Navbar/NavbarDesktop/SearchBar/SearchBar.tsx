@@ -13,22 +13,22 @@ function SearchBar() {
   };
 
   return (
-    <Box className="search-bar" marginLeft="2px">
-      <TextField
-        type="text"
-        label="¿Qué está buscando?"
-        value={searchKeyword}
-        onChange={(e) => updateSearchKeyword(e.target.value)}
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon onClick={handleSearch} style={{ cursor: 'pointer' }} />
-            </InputAdornment>
-          ),
-        }}
-        sx={{ width: '700px' }} 
-      />
-    </Box>
+    <Box className="search-bar" marginLeft="2px" width="100%" maxWidth="400px" marginX="auto">
+    <TextField
+      type="text"
+      label="¿Qué está buscando?"
+      value={searchKeyword}
+      onChange={(e) => updateSearchKeyword(e.target.value)}
+      InputProps={{
+        endAdornment: (
+          <InputAdornment position="start">
+            <SearchIcon onClick={handleSearch} style={{ cursor: 'pointer' }} />
+          </InputAdornment>
+        ),
+      }}
+      fullWidth  // Opción fullWidth para ocupar el ancho completo del contenedor
+    />
+  </Box>
   );
 }
 

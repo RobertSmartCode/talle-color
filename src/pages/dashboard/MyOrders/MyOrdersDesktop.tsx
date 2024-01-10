@@ -20,29 +20,30 @@ import {Order} from "../../../type/type"
 const MyOrdersDesktop : React.FC = () => {
 
   const [myOrders, setMyOrders] = useState<Order[]>([]);
+  
 
   useEffect(() => {
-    
-  
     const ordersCollection = collection(db, "orders");
-  
+
     getDocs(ordersCollection)
       .then((res) => {
         const newArr: Order[] = res.docs.map((order) => ({
           ...(order.data() as DocumentData),
           id: order.id,
+          // Convertir el _Timestamp a un objeto Date
+          date: order.data().date.toDate(),
         })) as Order[];
-       
+
         setMyOrders(newArr);
-       
-    
       })
       .catch((error) => console.log(error));
   }, []);
 
+
   return (
     <div  style={{ padding: "0px", margin:"0px"}} >
        {myOrders.map((order) => (
+        
   <Card key={order.id}  style={{ marginTop: '10px', marginRight: '110px' }}>
     <CardContent>
       <Typography variant="h6" style={{ textAlign: 'center' }}>
@@ -135,10 +136,17 @@ const MyOrdersDesktop : React.FC = () => {
           Total: ${order.total}
         </Typography>
       </Grid>
-
       <Typography variant="h6">
-        Fecha: {order.date.toLocaleString()} 
+        Fecha: {new Intl.DateTimeFormat('es-AR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+        }).format(order.date)}
       </Typography>
+
+
     </CardContent>
   </Card>
 ))}

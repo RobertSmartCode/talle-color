@@ -30,7 +30,7 @@ const MercadoPagoPayment = () => {
 
 const userData = getCustomerInformation()
 
-console.log(selectedShippingMethod)
+
 
 
   useEffect(() => {

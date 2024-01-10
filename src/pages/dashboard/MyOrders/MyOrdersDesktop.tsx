@@ -22,7 +22,7 @@ const MyOrdersDesktop : React.FC = () => {
   const [myOrders, setMyOrders] = useState<Order[]>([]);
 
   useEffect(() => {
-    console.log("Ejecutando useEffect");
+    
   
     const ordersCollection = collection(db, "orders");
   
@@ -39,9 +39,7 @@ const MyOrdersDesktop : React.FC = () => {
       })
       .catch((error) => console.log(error));
   }, []);
-  
 
-  console.log(myOrders);
   return (
     <div  style={{ padding: "0px", margin:"0px"}} >
        {myOrders.map((order) => (

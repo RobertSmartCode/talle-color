@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 
 const MobileLogo: React.FC = () => {
   const alt = 'Logo Desktop';
-  const width = '100px'; // Ancho opcional para el logo móvil
+  const width = '101px'; // Ancho opcional para el logo móvil
   const height = 'auto'; // Altura opcional para el logo móvil
   const logoUrl = import.meta.env.VITE_LOGO_DESKTOP
 
